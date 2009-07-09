@@ -3,6 +3,7 @@
 * command line script to generate model files
 * requires PHP 5.0: php -v 
 * use: php PATH -h localhost -u username -d dbname -p password -t WRITE_DIR_PATH
+* [optional] -m [table_one,table_two,table_three]
 */
 
 require_once(str_replace('//','/',dirname(__FILE__).'/') .'../rake/rake.php');
@@ -24,9 +25,10 @@ if(!array_key_exists('-d',$args) || !array_key_exists('-t',$args) || !array_key_
 
 $host = array_key_exists('-h',$args)?$args['-h']:'localhost';
 $user = array_key_exists('-u',$args)?$args['-u']:'root';
+$tables = array_key_exists('-m',$args)?explode(',',trim($args['-m'],'[]')):null;
 $name = $args['-d'];
 $pwd = $args['-p'];
-$target = $args['-t'];
+$target = $args['-t']; 
 
 // make sure target directory exists
 if(!is_dir($target)) {
@@ -37,7 +39,7 @@ if(!is_dir($target)) {
 try {
 
 	$db = new PDO("mysql:dbname=$name;host=$host",$user,$pwd);
-	new ActiveRecordRake($db,$target);
+	new ActiveRecordRake($db,$target,$tables);
 	echo "\n".'Script executed sucessfully'."\n";
 
 } catch(PDOException $e) {
