@@ -146,7 +146,7 @@ class ActiveRecordSelectStatement {
 		$node = is_null($pNode)?$this->_root:$pNode;
 		
 		if(!is_null($pParent) && $pParent->getConfig() instanceof ActiveRecordDynamicModel) {
-			// monetary fix for subqueries that have includes.
+			// momentary fix for subqueries that have includes.
 			// otherwise the include is not seen
 			if($node->hasSibling()) {
 				$this->_applyAll($node->getSibling(),$pParent);
@@ -170,9 +170,8 @@ class ActiveRecordSelectStatement {
 	
 		$node = is_null($pNode)?$this->_root:$pNode;
 
-		if(!is_null($this->_options) && !empty($this->_options)) { // array_key_exists($pRunner,$this->_options)
+		if(!is_null($this->_options) && !empty($this->_options)) {
 	
-			//$findConfig = new ActiveRecordFindConfig($this->_options[$pRunner]);
 			$findConfig = new ActiveRecordFindConfig(array_shift($this->_options));
 	
 			if($findConfig->hasInclude()===true) {
@@ -180,9 +179,19 @@ class ActiveRecordSelectStatement {
 				$modelIncludes = $findConfig->getInclude();
 				
 				foreach($modelIncludes as $modelInclude) {
-
-					//$includeFindConfig = array_key_exists(($pRunner+1),$this->_options)?new ActiveRecordFindConfig($this->_options[($pRunner+1)]):new ActiveRecordFindConfig(array());			
-					$includeFindConfig = !empty($this->_options)?new ActiveRecordFindConfig($this->_options[0]):new ActiveRecordFindConfig(array());
+					
+					/*
+					* modifed to accept arrays and FindConfig objects
+					*/
+					if(!empty($this->_options)) {
+						if($this->_options[0] instanceof IActiveRecordFindConfig) {
+							$includeFindConfig = $this->_options[0];
+						} else {
+							$includeFindConfig = new ActiveRecordFindConfig($this->_options[0]);
+						}
+					} else {
+						$includeFindConfig = new ActiveRecordFindConfig(array());
+					}
 					
 					if($modelInclude instanceof ActiveRecordSelectStatement) {
 						
