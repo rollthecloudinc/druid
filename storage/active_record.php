@@ -483,8 +483,8 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 		
 		if(strcmp($mode,self::findSelect)==0) return $select; // return without reseting count
 		
-		//echo '<p>',$select->toSql(),'</p>';
-		//echo '<pre>',print_r($select->getBindData()),'</pre>';
+		// echo '<p>',$select->toSql(),'</p>';
+		// echo '<pre>',print_r($select->getBindData()),'</pre>';
 		//return;
 		
 		$stmt = $select->query(self::$_db);
