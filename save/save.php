@@ -149,7 +149,7 @@ class ActiveRecordSave {
 		
 		try {
 			
-			//$query->showQuery();
+			// $query->showQuery();
 			if($query->query($this->db)) {
 				return true;				
 			} else {

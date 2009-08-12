@@ -1,4 +1,5 @@
 <?php
+require_once( str_replace('//','/',dirname(__FILE__).'/') .'../core/inflector/inflector.php');
 require_once( str_replace('//','/',dirname(__FILE__).'/') .'../core/model/model_config.php');
 class ActiveRecordGenerate {
 
@@ -23,9 +24,13 @@ class ActiveRecordGenerate {
 	}
 	
 	protected function _init() {
-	
-		// enable fields, requiredFields and foreign keys only be default. Disable everything else
+		
 		$this->disableAll();
+		
+		// enable fields, requiredFields and foreign keys only be default. Disable everything else
+		// enable table by default just in case table doesn't follow plural rule
+		$this->enableTable();
+		$this->enablePrimaryKey();
 		$this->enableFields();
 		$this->enableRequiredFields();
 		$this->enableForeignKeys();
@@ -164,7 +169,7 @@ class ActiveRecordGenerate {
 	
 	protected function _makeClassFile(IActiveRecordModelConfig $config) {
 		
-		$str = 'require_once(\'base/base_'.Inflector::underscore($config->getClassName()).'.class.php\');'."\n";
+		$str = 'require_once(\'base/base_'.Inflector::underscore($config->getClassName()).'.php\');'."\n";
 		$str.= 'class '.$config->getClassName().' extends Base'.$config->getClassName().' { '."\n\n";
 	
 		if($this->table === true && $config->hasTable()===true) $str.= "\t".'public static $'.IActiveRecordModelConfig::table.' = \''.trim($config->getTable()).'\';'."\n\n"; 
@@ -306,8 +311,8 @@ class ActiveRecordGenerate {
 			$stub = '<?php'."\n".$this->_makeBaseFile($config)."\n".'?>';
 			$contents = '<?php'."\n".$this->_makeClassFile($config)."\n".'?>';
 			
-			$base = $target.'/base/base_'.Inflector::underscore($config->getClassName()).'.class.php';
-			$model = $target.'/'.Inflector::underscore($config->getClassName()).'.class.php';
+			$base = $target.'/base/base_'.Inflector::underscore($config->getClassName()).'.php';
+			$model = $target.'/'.Inflector::underscore($config->getClassName()).'.php';
 			
 			file_put_contents($base,$stub);
 			file_put_contents($model,$contents);
