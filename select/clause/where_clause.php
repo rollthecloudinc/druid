@@ -69,7 +69,7 @@ class ActiveRecordWhereClause {
     	foreach($pFilter as $field=>$filter) {
     		
     		// break apart the selector into component parts
-    		$s = $this->_breakApartFilterSelector($field);
+    		$s = $this->_breakApartFilterSelector($field,$config);
     		
     		// set some variables equal to selector parts to make this less confusing
     		$selector = $s['selector'];
@@ -227,10 +227,21 @@ class ActiveRecordWhereClause {
     /*
      * breaks apart filter selector into component pieces
      */
-    protected function _breakApartFilterSelector($pSelector) {
+    protected function _breakApartFilterSelector($pSelector,$pTableConfig) {
     	
     	$operand = trim($this->_extractFilterSelectorOperand($pSelector));
     	$column = trim(str_replace($operand,'',$pSelector));
+    	
+    	/*
+    	* Swap primary magical key with actual field name
+    	* first check to see if any matches exists. If any do
+    	* then proceed that one or more then one "could" exists though
+    	* unlikely and replace them all.
+    	*/
+    	/*if(strpos($column,IActiveRecordFindConfig::id)!==false) {
+    		$column = str_replace(IActiveRecordFindConfig::id,$pTableConfig->getPrimaryKey(),$column);
+    	}*/
+    	
     	$pSelector = $column.' '.$operand;
     	return array('selector'=>$pSelector,'operand'=>$operand,'column'=>$column);
     	

@@ -28,12 +28,16 @@ class ActiveRecordSelectStatement {
 	
 	protected $_fromData;
 	
+	// added to make magical primary key replacement "simple"
+	protected $_nodeLog;
+	
 	public function __construct(ActiveRecordSelectNode $pRootNode,$pOptions=null) {
 	
 		$this->_root = $pRootNode;
 		$this->_options = is_null($pOptions)?array():$pOptions;
 		
 		$this->_fromData = array();
+		$this->_nodeLog = array();
 		
 		$this->_init();
 	
@@ -361,7 +365,16 @@ class ActiveRecordSelectStatement {
 	
 	}
 	
+	protected function _addLogNode(ActiveRecordSelectNode $pNode) {
+		
+		$unique = $pNode->getUnique();
+		$this->_nodeLog[$unique] = $pNode;
+		
+	}
+	
 	protected function _applyAll(ActiveRecordSelectNode $pNode,ActiveRecordSelectNode $pParent=null) {
+	
+		$this->_addLogNode($pNode);
 	
 		$this->_applyFrom($pNode,$pParent);
 		
@@ -444,18 +457,28 @@ class ActiveRecordSelectStatement {
 		$fields = $config->hasFields()?$config->getFields():array();
 		
 		if($find->hasSelect()) {
+			
+			// replace magical primary key constant
+			$select = $find->getSelect();
+			$searchForMagicalPrimaryKey = array_search(ActiveRecordFindConfig::id,$select);
+			
+			if($searchForMagicalPrimaryKey !== false) {
+				$select[$searchForMagicalPrimaryKey] = $primaryKey;
+			}
 		
-			$fields = $find->getSelect()?array_intersect($fields,$find->getSelect()):array();
+			$fields = $find->getSelect()?array_intersect($fields,$select):array();
 		
 		}
 		
 		$empty = $find->hasEmpty()===true?$find->getEmpty():false;
 		if($empty===true) {
-			return $fields;
+			return $find->hasSelect()===true?$fields:array();
 		}
 		
 		if(!empty($fields) && $find->hasNonSelect()) {
-		
+			
+			// can't force a deselect of the primary key
+			// no need to handle magical primary key here
 			$fields = array_diff($fields,$find->getNonSelect());
 		
 		}
@@ -539,6 +562,42 @@ class ActiveRecordSelectStatement {
 	
 	}
 	
+	protected function _applyMagicalPrimaryKeyReplacement() {
+		
+		/*
+		* Seems like the most benefical way to handle replacement of 
+		* of magical primary key and mapping it to the correct node. Otherwise
+		* if two tables where joined and a condition for the first included 
+		* references to both then each magical key would be mapped to the
+		* table that the find config belongs. Instead we are going to logically
+		* match each occurance and map it to correct node manually to get this correct.
+		* However, for efficiency sake use strpos() to make sure we even need to begin
+		* doing this. strpos is relativly cheap while what is being done below may not.
+		*/
+		if(strpos($this->_sql,IActiveRecordFindConfig::id)===false) return;
+		
+		$matches = array();
+		preg_match_all('/t[0-9]+?(.|_)'.IActiveRecordFindConfig::id.'/',$this->_sql,$matches);
+		
+		$matches = array_unique($matches[0]);
+		foreach($matches as $key=>$match) {
+		
+			$pieces = explode(',',preg_replace('/^(.*?)([0-9]+)(.|_)(.*?)$/','$1,$2,$3,$4',$match));
+			$unique = (int) $pieces[1];
+			
+			if(isset($this->_nodeLog[$unique])) {
+			
+				$pieces[3] = $this->_nodeLog[$unique]->getConfig()->getPrimaryKey();
+				$this->_sql = str_replace($match,implode('',$pieces),$this->_sql);
+				
+			}
+			
+		}
+	
+	}
+	
+	protected
+	
 	protected function _handleManyToMany(ActiveRecordSelectNode $pNode,ActiveRecordSelectNode $pParent,$pJoinType='INNER') {
 	
 		$belongsToAndHasMany = $pParent->getConfig()->getBelongsToAndHasMany();
@@ -605,7 +664,9 @@ class ActiveRecordSelectStatement {
 		$sql.= !empty($limitSql)?'  LIMIT '.$limitSql:'';
 		
 		$this->_sql= $sql;
+		
 		$this->replaceClassWithAlias();
+		$this->_applyMagicalPrimaryKeyReplacement();
 	
 	}
 

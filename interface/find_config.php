@@ -87,6 +87,17 @@ interface IActiveRecordFindConfig {
 	const findAssociation = 'association';
 	const findAssociationPropertyName = 'rename';
 	const findAssociationPropertyType = 'propertyType';
+	
+	/*
+	* Will magically reference primary key regardless of its name. This makes
+	* it possible to build clauses such as filters without actually knowing
+	* the primary key field name. This can be done because the system relies
+	* on the fact that one primary key field exists per table. Thus, making it a matter
+	* of parsing for this "special" value and swapping it out with the actual
+	* primary key name from the table config object. This feature has not been implemented
+	* yet though.
+	*/
+	const id = ':pk';
 
 	public function getInclude();
 	public function getLimit();
