@@ -2,6 +2,7 @@
 $d = str_replace('//','/',dirname(__FILE__).'/');
 require_once($d.'entity/data_entity.php');
 require_once($d.'collection/collection.php');
+require_once($d.'../core/connection/connection.php');
 require_once($d.'../core/inflector/inflector.php');
 require_once($d.'../select/select_node.php');
 require_once($d.'../select/count_statement.php');
