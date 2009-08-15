@@ -1,10 +1,16 @@
 <?php
+/*
+* All Queries are routed and executed through instances of this class
+*/
 class ActiveRecordQuery {
 
 	protected $data;
 	protected $sql;
 	
 	protected $action;
+	
+	// will dump SQL to browser
+	protected static $dump = false;
 	
 	public function __construct($sql='',$data=null,IActiveRecordQueryAction $action=null) {
 	
@@ -36,8 +42,9 @@ class ActiveRecordQuery {
 	
 	public function query(PDO $db) {
 		
-		//$this->showQuery();
-		//return;
+		if(self::$dump===true) {
+			$this->showQuery();
+		}
 	
 		if(empty($this->sql)) throw new Exception('Unable to process query empty SQL string. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__.'.');
 	
@@ -76,6 +83,14 @@ class ActiveRecordQuery {
 		echo '<p>',$this->sql,'</p>';
 		echo '<pre>',print_r($this->data),'</pre>';
 	
+	}
+	
+	public static function enableDump() {
+		self::$dump = true;
+	}
+	
+	public static function disableDump() {
+		self::$dump = false;
 	}
 
 }

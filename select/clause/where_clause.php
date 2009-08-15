@@ -232,16 +232,6 @@ class ActiveRecordWhereClause {
     	$operand = trim($this->_extractFilterSelectorOperand($pSelector));
     	$column = trim(str_replace($operand,'',$pSelector));
     	
-    	/*
-    	* Swap primary magical key with actual field name
-    	* first check to see if any matches exists. If any do
-    	* then proceed that one or more then one "could" exists though
-    	* unlikely and replace them all.
-    	*/
-    	/*if(strpos($column,IActiveRecordFindConfig::id)!==false) {
-    		$column = str_replace(IActiveRecordFindConfig::id,$pTableConfig->getPrimaryKey(),$column);
-    	}*/
-    	
     	$pSelector = $column.' '.$operand;
     	return array('selector'=>$pSelector,'operand'=>$operand,'column'=>$column);
     	
