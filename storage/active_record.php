@@ -160,6 +160,9 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 	}
 	
 	public function setProperty($pName,$pValue) {
+	
+		// check for magical primary key and handle appropriatly		
+		$pName = $pName === IActiveRecordFindConfig::id?ActiveRecordModelConfig::getModelConfig(get_class($this))->getPrimaryKey():$pName;
 		
 		if(!in_array($pName,$this->_changed)) $this->_changed[] = $pName;
 		

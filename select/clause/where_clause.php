@@ -77,8 +77,14 @@ class ActiveRecordWhereClause {
     		$column = $s['column'];
     		
     		if($filter instanceof ActiveRecordSelectStatement) {
-    		
-    			$this->_filters[$index][] = $alias.'.'.$selector.' ('.$filter->toSql().')';
+    			
+    			// support for exists and not exists
+    			if(strcasecmp($column,'exists')==0 || strcasecmp($column,'not exists')==0) {
+    				$this->_filters[$index][] = $column.' ('.$filter->toSql().')';
+    			} else {
+    				$this->_filters[$index][] = $alias.'.'.$selector.' ('.$filter->toSql().')';
+    			}   			
+    			
     			$this->_filterData = array_merge($this->_filterData,$filter->getBindData()); 
     			
     		} else if($filter instanceof ActiveRecord) {
