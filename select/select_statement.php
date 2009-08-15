@@ -596,8 +596,6 @@ class ActiveRecordSelectStatement {
 	
 	}
 	
-	protected
-	
 	protected function _handleManyToMany(ActiveRecordSelectNode $pNode,ActiveRecordSelectNode $pParent,$pJoinType='INNER') {
 	
 		$belongsToAndHasMany = $pParent->getConfig()->getBelongsToAndHasMany();
