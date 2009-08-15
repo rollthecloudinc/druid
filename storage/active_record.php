@@ -160,10 +160,24 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 	
 	}
 	
+	/*
+	* Decorates setProperty() of ActiveRecordDataEntity adding
+	* magical primary key support, validation and change logging
+	*/
 	public function setProperty($pName,$pValue) {
 	
+		$config = ActiveRecordModelConfig::getModelConfig(get_class($this));
+	
 		// check for magical primary key and handle appropriatly		
-		$pName = $pName === IActiveRecordFindConfig::id?ActiveRecordModelConfig::getModelConfig(get_class($this))->getPrimaryKey():$pName;
+		$pName = $pName === IActiveRecordFindConfig::id?$config->getPrimaryKey():$pName;
+		
+		// run validation if any exists
+		$validation = $config->getValidation();
+		if(array_key_exists($pName,$validation) && method_exists($this,$validation[$pName])) {	
+		
+			$this->{$validation[$pName]}($pValue);
+			
+		}
 		
 		if(!in_array($pName,$this->_changed)) $this->_changed[] = $pName;
 		

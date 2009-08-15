@@ -8,6 +8,7 @@ interface IActiveRecordModelConfig {
 	const primaryKey 			= 'primaryKey';
 	const uniqueKeys			= 'uniqueKeys';
 	const foreignKeys 			= 'foreignKeys';
+	const validation			= 'validate';
 	const transformations		= 'transformations';
 	const dataTypes				= 'dataTypes';
 	const requiredFields		= 'requiredFields';
@@ -25,6 +26,7 @@ interface IActiveRecordModelConfig {
 	public function getPrimaryKey();
 	public function getUniqueKeys();
 	public function getForeignKeys();
+	public function getValidation();
 	public function getTransformations();
 	public function getDataTypes();
 	public function getRequiredFields();
@@ -42,6 +44,7 @@ interface IActiveRecordModelConfig {
 	public function hasPrimaryKey();
 	public function hasUniqueKeys();
 	public function hasForeignKeys();
+	public function hasValidation();
 	public function hasTransformations();
 	public function hasDataTypes();
 	public function hasRequiredFields();

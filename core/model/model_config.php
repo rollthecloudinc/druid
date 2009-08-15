@@ -12,6 +12,7 @@ class ActiveRecordModelConfig implements IActiveRecordModelConfig {
 	protected $_primaryKey;
 	protected $_uniqueKeys;
 	protected $_foreignKeys;
+	protected $_validation;
 	protected $_transformations;
 	protected $_dataTypes;
 	protected $_requiredFields;
@@ -62,6 +63,8 @@ class ActiveRecordModelConfig implements IActiveRecordModelConfig {
 		$this->setUniqueKeys(array_key_exists(IActiveRecordModelConfig::uniqueKeys,$classAttr)?$classAttr[IActiveRecordModelConfig::uniqueKeys]:array());
 		
 		$this->setForeignKeys(array_key_exists(IActiveRecordModelConfig::foreignKeys,$classAttr)?$classAttr[IActiveRecordModelConfig::foreignKeys]:array());
+		
+		$this->setValidation(array_key_exists(IActiveRecordModelConfig::validation,$classAttr)?$classAttr[IActiveRecordModelConfig::validation]:array());
 		
 		$this->setTransformations(array_key_exists(IActiveRecordModelConfig::transformations,$classAttr)?$classAttr[IActiveRecordModelConfig::transformations]:array());
 			
@@ -121,6 +124,12 @@ class ActiveRecordModelConfig implements IActiveRecordModelConfig {
 	
 		$this->_foreignKeys = $pForeignKeys;
 	
+	}
+	
+	public function setValidation($pValidation) {
+	
+		$this->_validation = $pValidation;
+		
 	}
 	
 	public function setTransformations($pTransformations) {
@@ -209,6 +218,10 @@ class ActiveRecordModelConfig implements IActiveRecordModelConfig {
 		return $this->_foreignKeys;
 	}
 	
+	public function getValidation() {
+		return $this->_validation;
+	}
+	
 	public function getTransformations() {
 		return $this->_transformations;
 	}
@@ -277,6 +290,10 @@ class ActiveRecordModelConfig implements IActiveRecordModelConfig {
 	
 	public function hasForeignKeys() {
 		return empty($this->_foreignKeys)?false:true;
+	}
+	
+	public function hasValidation() {
+		return empty($this->_validation)?false:true;
 	}
 	
 	public function hasTransformations() {
