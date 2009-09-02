@@ -13,6 +13,7 @@ interface IActiveRecordModelConfig {
 	const dataTypes				= 'dataTypes';
 	const requiredFields		= 'requiredFields';
 	const defaultValues			= 'defaults';
+	const defaultFilter			= 'defaultFilter';
 	const cascadeDelete			= 'cascadeDelete';
 	const links					= 'links';
 	const hasOne 				= 'hasOne';
@@ -31,6 +32,7 @@ interface IActiveRecordModelConfig {
 	public function getDataTypes();
 	public function getRequiredFields();
 	public function getDefaultValues();
+	public function getDefaultFilter();
 	public function getCascadeDelete();
 	public function getLinks();
 	public function gethasOne();
@@ -49,6 +51,7 @@ interface IActiveRecordModelConfig {
 	public function hasDataTypes();
 	public function hasRequiredFields();
 	public function hasDefaultValues();
+	public function hasDefaultFilter();
 	public function hasCascadeDelete();
 	public function hasLinks();
 	public function hasOne();

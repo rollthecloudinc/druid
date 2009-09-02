@@ -4,8 +4,9 @@
 */
 interface IActiveRecordFindConfig {
 
-	// allowed only for first/main argument
 	const findInclude = 'include';
+	
+	// allowed only for first/main argument
 	const findLimit = 'limit';	
 	const findOffset = 'offset';
 	
@@ -98,6 +99,13 @@ interface IActiveRecordFindConfig {
 	* yet though.
 	*/
 	const id = ':pk';
+	
+	/*
+	* bool determines whether to apply model filter when specified for a model. By default
+	* if a model filter exists for a model it will be applied. This option can be set to false
+	* to negate the default behavior of applying it.
+	*/
+	const findIgnoreModelFilter = 'modelFilter';
 
 	public function getInclude();
 	public function getLimit();
@@ -116,6 +124,7 @@ interface IActiveRecordFindConfig {
 	public function getMagicalFilter();
 	public function getInvisible();
 	public function getEmpty();
+	public function getIgnoreModelFilter();
 	public function getAssociation();
 	public function getAssociationPropertyName();
 	public function getAssociationPropertyType();
@@ -137,6 +146,7 @@ interface IActiveRecordFindConfig {
 	public function hasMagicalFilter();
 	public function hasInvisible();
 	public function hasEmpty();
+	public function hasIgnoreModelFilter();
 	public function hasAssociation();
 	public function hasAssociationPropertyName();
 	public function hasAssociationPropertyType();

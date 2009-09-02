@@ -19,6 +19,7 @@ class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 	protected $_magicalFilter;
 	protected $_invisible;
 	protected $_empty;
+	protected $_ignoreModelFilter;
 	protected $_association;
 	protected $_associationPropertyName;
 	protected $_associationPropertyType;
@@ -109,6 +110,11 @@ class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 		if(array_key_exists(IActiveRecordFindConfig::findEmpty,$pOptions)) {
 			$this->setEmpty($pOptions[IActiveRecordFindConfig::findEmpty]);
 			unset($pOptions[IActiveRecordFindConfig::findEmpty]);
+		}
+		
+		if(array_key_exists(IActiveRecordFindConfig::findIgnoreModelFilter,$pOptions)) {
+			$this->setIgnoreModelFilter($pOptions[IActiveRecordFindConfig::findIgnoreModelFilter]);
+			unset($pOptions[IActiveRecordFindConfig::findIgnoreModelFilter]);
 		}
 		
 		if(array_key_exists(IActiveRecordFindConfig::findAssociation,$pOptions)) {
@@ -238,6 +244,16 @@ class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 	
 	}
 	
+	public function setIgnoreModelFilter($pIgnoreModelFilter) {
+	
+		if(is_bool($pIgnoreModelFilter)) {
+	
+			$this->_ignoreModelFilter = $pIgnoreModelFilter;
+		
+		}
+	
+	}
+	
 	public function setAssociation($pAssociation) {
 	
 		$this->_association = $pAssociation;
@@ -354,6 +370,12 @@ class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 	public function getEmpty() {
 	
 		return $this->_empty;
+	
+	}
+	
+	public function getIgnoreModelFilter() {
+	
+		return $this->_ignoreModelFilter;
 	
 	}
 	
@@ -476,6 +498,12 @@ class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 	public function hasEmpty() {
 	
 		return is_null($this->_empty)?false:true;
+	
+	}
+	
+	public function hasIgnoreModelFilter() {
+	
+		return is_null($this->_ignoreModelFilter)?false:true;
 	
 	}
 	

@@ -146,6 +146,15 @@ class ActiveRecordCollection implements arrayaccess,IteratorAggregate,Countable,
 		echo '<pre>',print_r($this),'</pre>';
 		
 	}
+	
+	public function setProperty($name,$value) {
+	
+		$total = $this->count();
+		for($i=0;$i<$total;$i++) {
+			$this->container[$i]->setProperty($name,$value);
+		}
+	
+	}
 
 }
 ?>

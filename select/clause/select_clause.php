@@ -132,6 +132,11 @@ class ActiveRecordSelectClause {
 			//$str = $pAliases->replaceWithAlias($str);
 			$str = str_replace(array($className.'.',self::selectDynamicThisModel.'.'),$alias.'.',$str);
 			
+			if($pNode->hasChild()===true) {
+				$childUnique = $pNode->getChild()->getUnique();
+				$str = str_replace('{next}.','t'.$childUnique.'.',$str);
+			}
+			
     		$str.= ' AS '.$alias.'_'.$name;
     		$this->_fields[$index][$name] = $str;
 		

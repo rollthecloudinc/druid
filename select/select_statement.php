@@ -494,6 +494,14 @@ class ActiveRecordSelectStatement {
 	protected function _applyFilter(ActiveRecordSelectNode $pNode) {
 	
 		$find = $pNode->getFindConfig();
+		
+		/*
+		* Models default filter
+		* apply filter by default if exists but allow find config to override this default behavior
+		*/
+		if($pNode->getConfig()->hasDefaultFilter() === true && ($find->hasIgnoreModelFilter() === false || $find->getIgnoreModelFilter() === true)) {
+			$this->_whereClause->addFilter($pNode,$pNode->getConfig()->getDefaultFilter(),true);
+		}
 	
 		if($find->hasConditionMap()===true && $find->hasCondition()===true) {
 		

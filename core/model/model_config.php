@@ -17,6 +17,7 @@ class ActiveRecordModelConfig implements IActiveRecordModelConfig {
 	protected $_dataTypes;
 	protected $_requiredFields;
 	protected $_defaultValues;
+	protected $_defaultFilter;
 	protected $_cascadeDelete;
 	protected $_links;
 	protected $_hasOne;
@@ -73,6 +74,8 @@ class ActiveRecordModelConfig implements IActiveRecordModelConfig {
 		$this->setRequiredFields(array_key_exists(IActiveRecordModelConfig::requiredFields,$classAttr)?$classAttr[IActiveRecordModelConfig::requiredFields]:array());
 		
 		$this->setDefaultValues(array_key_exists(IActiveRecordModelConfig::defaultValues,$classAttr)?$classAttr[IActiveRecordModelConfig::defaultValues]:array());
+		
+		$this->setDefaultFilter(array_key_exists(IActiveRecordModelConfig::defaultFilter,$classAttr)?$classAttr[IActiveRecordModelConfig::defaultFilter]:array());
 		
 		$this->setCascadeDelete(array_key_exists(IActiveRecordModelConfig::cascadeDelete,$classAttr)?$classAttr[IActiveRecordModelConfig::cascadeDelete]:array());
 		
@@ -147,6 +150,12 @@ class ActiveRecordModelConfig implements IActiveRecordModelConfig {
 	public function setRequiredFields($pRequiredFields) {
 	
 		$this->_requiredFields = $pRequiredFields;
+	
+	}
+	
+	public function setDefaultFilter($pDefaultFilter) {
+	
+		$this->_defaultFilter = $pDefaultFilter;
 	
 	}
 	
@@ -238,6 +247,10 @@ class ActiveRecordModelConfig implements IActiveRecordModelConfig {
 		return $this->_defaultValues;
 	}
 	
+	public function getDefaultFilter() {
+		return $this->_defaultFilter;
+	}
+	
 	public function getCascadeDelete() {
 		return $this->_cascadeDelete;
 	}
@@ -310,6 +323,10 @@ class ActiveRecordModelConfig implements IActiveRecordModelConfig {
 	
 	public function hasDefaultValues() {
 		return empty($this->_defaultValues)?false:true;
+	}
+	
+	public function hasDefaultFilter() {
+		return empty($this->_defaultFilter)?false:true;
 	}
 	
 	public function hasCascadeDelete() {
