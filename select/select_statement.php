@@ -379,7 +379,7 @@ class ActiveRecordSelectStatement {
 		$this->_applyFrom($pNode,$pParent);
 		
 		$this->_applySelect($pNode);
-		$this->_applyFilter($pNode);
+		$this->_applyFilter($pNode,$pParent);
 		$this->_applySort($pNode);
 		$this->_applyGroup($pNode);
 		$this->_applyHaving($pNode);
@@ -405,6 +405,9 @@ class ActiveRecordSelectStatement {
 			
 			$this->_fromClause.= ' '.$joinType.' JOIN '.$pNode->getConfig()->getTable().' AS t'.$pNode->getUnique().' ON t'.$pParent->getUnique().'.'.$pParent->getConfig()->getRelatedField($pNode->getConfig()).' = t'.$pNode->getUnique().'.'.$pNode->getConfig()->getRelatedField($pParent->getConfig()).' ';
 			
+			// add model filter to the mix
+			$this->_applyModelFilter($pNode,$pParent);
+			
 		} else {
 			$this->_fromClause.= ' '.$pNode->getConfig()->getTable().' AS t'.$pNode->getUnique().' ';
 		}
@@ -429,6 +432,9 @@ class ActiveRecordSelectStatement {
 			
 			$sql = ' '.$joinType.' JOIN '.$pNode->getConfig()->getTable().' AS t'.$pNode->getUnique().' ON '.implode(' AND ',$associations).' ';
 			$this->_fromClause.= $sql;
+			
+			// add model filter to the mix
+			$this->_applyModelFilter($pNode,$pParent);
 			
 		} else {
 			$sql = ' '.$pNode->getConfig()->getTable().' AS t'.$pNode->getUnique().' ';
@@ -491,15 +497,16 @@ class ActiveRecordSelectStatement {
 	
 	}
 	
-	protected function _applyFilter(ActiveRecordSelectNode $pNode) {
+	protected function _applyFilter(ActiveRecordSelectNode $pNode,ActiveRecordSelectNode $pParent=null) {
 	
 		$find = $pNode->getFindConfig();
 		
 		/*
+		* KILL if has child or is child - included in from clause
 		* Models default filter
 		* apply filter by default if exists but allow find config to override this default behavior
 		*/
-		if($pNode->getConfig()->hasDefaultFilter() === true && ($find->hasIgnoreModelFilter() === false || $find->getIgnoreModelFilter() === true)) {
+		if($pNode->hasChild() === false && $pParent === null && $pNode->getConfig()->hasDefaultFilter() === true && ($find->hasIgnoreModelFilter() === false || $find->getIgnoreModelFilter() === true)) {
 			$this->_whereClause->addFilter($pNode,$pNode->getConfig()->getDefaultFilter(),true);
 		}
 	
@@ -619,8 +626,11 @@ class ActiveRecordSelectStatement {
 					$throughModelConfig = ActiveRecordModelConfig::getModelConfig(Inflector::classify($through));
 					$throughNode = new ActiveRecordSelectNode($throughModelConfig);
 					$this->_fromClause.= ' '.$pJoinType.' JOIN '.$throughNode->getConfig()->getTable().' AS t'.$throughNode->getUnique().' ON t'.$pParent->getUnique().'.'.$pParent->getConfig()->getRelatedField($throughNode->getConfig()).' = t'.$throughNode->getUnique().'.'.$throughNode->getConfig()->getRelatedField($pParent->getConfig()).' ';
+					
+					// add model filter to the mix... I think
+					$this->_applyModelFilter($throughNode,$pParent);
+					
 					$pParent =  $throughNode;
-						
 					
 				}
 					
@@ -646,6 +656,31 @@ class ActiveRecordSelectStatement {
 			$this->setOffset($find->getOffset());
 		}
 	
+	
+	}
+	
+	protected function _applyModelFilter(ActiveRecordSelectNode $pNode,ActiveRecordSelectNode $pParent) {
+	
+		// add model filter into mix
+		$boolNodeModelFilter = false;
+		$boolParentModelFilter = false;
+		
+		$objWhereClause = new ActiveRecordWhereClause();
+		
+		if($pParent->getConfig()->hasDefaultFilter() === true && ($pParent->getFindConfig()->hasIgnoreModelFilter() === false || $pParent->getFindConfig()->getIgnoreModelFilter() === true)) {
+			$boolParentModelFilter = true;
+			$objWhereClause->addFilter($pParent,$pParent->getConfig()->getDefaultFilter(),true);
+		}
+			
+		if($pNode->getConfig()->hasDefaultFilter() === true && ($pNode->getFindConfig()->hasIgnoreModelFilter() === false || $pNode->getFindConfig()->getIgnoreModelFilter() === true)) {
+			$boolNodeModelFilter = true;
+			$objWhereClause->addFilter($pNode,$pNode->getConfig()->getDefaultFilter(),true);
+		}
+			
+		if($boolNodeModelFilter === true || $boolParentModelFilter === true) {
+			$this->_fromClause.= ' AND '.$objWhereClause->toSql();
+			$this->_fromData = array_merge($this->_fromData,$objWhereClause->getFilterData());
+		}
 	
 	}
 	
