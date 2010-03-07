@@ -35,13 +35,18 @@ class ActiveRecordCollectionAgent {
 		
 		if($find->getInvisible()===true) return;
 		
-		if(!($pNode->getConfig() instanceof ActiveRecordDynamicModel)) {
+		/*
+		* 3/6/10 - Added condition to not ignore dynamic model (select statement) that is the root 
+		* 
+		* Added: || is_null($pParentNode)
+		*/
+		if(!($pNode->getConfig() instanceof ActiveRecordDynamicModel) || is_null($pParentNode)) {
 			if(is_null($pParent)===true) {
-		
+				
 				$current = $this->_processRoot($pData,$pNode);
 		
 			} else {
-		
+				
 				$current = $this->_processChild($pParent,$pData,$pNode,$pParentNode);
 				
 			}
@@ -66,8 +71,18 @@ class ActiveRecordCollectionAgent {
 	}
 	
 	protected function _processRoot($pData,ActiveRecordSelectNode $pNode) {
-	
-		$primaryKeyField = 't'.$pNode->getUnique().'_'.$pNode->getConfig()->getPrimaryKey();
+		
+		/*
+		* 3/6/10 Edited to handle root level dynamic select statements. Added conditonal if
+		* statement to handle differentation in implementation between root dynamic model
+		* and true model. 
+		*/
+		if($pNode->getConfig() instanceof ActiveRecordDynamicModel) {
+			$primaryKeyField = 't'.$pNode->getUnique()."_t{$pNode->getConfig()->getSelect()->getNode()->getUnique()}_".$pNode->getConfig()->getSelect()->getNode()->getConfig()->getPrimaryKey();
+		} else {
+			$primaryKeyField = 't'.$pNode->getUnique().'_'.$pNode->getConfig()->getPrimaryKey();
+		}
+		
 		$primaryKey = $pData[$primaryKeyField];
 		$index = array_search($primaryKey,$this->_primaryKeys);
 	
@@ -75,8 +90,18 @@ class ActiveRecordCollectionAgent {
 			
 			$entity = new ActiveRecordDataEntity();
 			$className = $pNode->getConfig()->getClassName();
-			$record = new $className($entity);
 			
+			/*
+			* 3/6/10 Added conditional to use base node for select where the root
+			* node is a subquery. 
+			*/
+			if($pNode->getConfig() instanceof ActiveRecordDynamicModel) {
+				$className = $pNode->getConfig()->getSelect()->getNode()->getConfig()->getClassName();
+			} else {
+				$className = $pNode->getConfig()->getClassName();
+			}
+				
+			$record = new $className($entity);			
 			$this->_loadData($entity,$pData,$pNode);
 			
 			$this->_primaryKeys[] = $primaryKey;

@@ -15,20 +15,156 @@ require_once($d.'../cascade/action/deactivate.php');
 require_once($d.'../core/validation/validation.php');
 abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,ActiveRecordSavable,ActiveRecordDestroyable,IActiveRecordXML,ActiveRecordDumpable {
 
-	const findCount 	= 	'count';
-	const findAll	 	=	'all';
-	const findOne		=	'one';
-	const findSelect	=	'subquery';
+	const 
 	
-	const findRelatedPrefix = 'get';
-	const countRelatedPrefix = 'count';
-	const addRelatedPrefix = 'add';
+	/*
+	* Optional [first] argument for ActiveRecord::find() method to change intended
+	* behavior in respect to what is returned or statement object used. The default
+	* argument is ActiveRecord::findAll which performs a basic find operation that returns
+	* a ActiveRecord collection of mateched items.
+	* 
+	* The default behavior of findAll can be changed by using one of the other 3 finder modes.
+	* Thye three find modes available are:
+	* 
+	* 1.) ActiveRecord::findOne
+	* 2.) ActiveRecord::findCount
+	* 3.) ActiveRecord::findSubquery 
+	* 
+	* The ActiveRecord::findOne method functions exactly the same as ActiveRecord::findAll but returns
+	* a single ActiveRecord rather than a collection of items. This useful for operations in which you
+	* know only one record may be returned such as; when setting limit to 1. So rather than getting
+	* back an array [collection] of items you get back a single ActiveRecord object or null if nothing
+	* was found. Something worth noting is that when nothing is found using the ActiveRecord::findAll method
+	* a collection object is still returned but it will be empty unlike ActiveRecord::findOne which will return null.
+	* 
+	* Similarly ActiveRecord::findCount functions the same as ActiveRecord::findAll and ActiveRecord::findOne
+	* but returns a single integer representing the number of items matched. Internally, this mode changes
+	* the type of select statement used so that only a count is selected rather than every single column of each
+	* included model. Thus, this particular mode is most useful when you would like to perform somthing resembling
+	* a COUNT(*) operation and get back the total as an integer representing the number of items matched.
+	* 
+	* Entirly different than all those before is ActiveRecord::findSelect. This mode is unique in respect
+	* to it returning the raw select statement (ActiveRecordSelectStatement) object used to compile the 
+	* end query for the find operation. This mode was manifested for the purpose of using subqueries and
+	* calculated columns. For example, often times when locating the group wise maximum a subquery is required
+	* to first perform a selection of the maximum time and joining on the outer most query to actually resolve
+	* the row that relates. The ActiveRecord::findSelect supports this functionality within the system by allowing
+	* ActiveRecordSelectSatetment objects to be directory included in dynamic columns, where clause and include
+	* flag when finding items. In then end making it possible to have 1,2,3,4... levels of nested subqueries.
+	* 
+	* @TODO: Future development will include the ability to use a ActiveRecordSelect statement as the primary
+	* model (first table). Currently this is a functionality that is not directly supported in the system.
+	* 
+	* SELECT
+	*      ...
+	*   FROM
+	*      (SELECT (first table can't be a dynamic model - dynamic model being any model generated from a ActiveRecordSelectStatement at runtime)
+	*         FROM
+	*       ) t1
+	*   INNER
+	*    JOIN
+	*       users t2
+	*      ON
+	*       ...
+	* 
+	* @TODO: Union (merging) abilities for multiple models
+	* 
+	*/
+	findCount = 'count'
+	,findAll = 'all'
+	,findOne = 'one'
+	,findSelect	= 'subquery'
+	
+	/*
+	* The below represent the inital string to identify dynamic find methods for instantiated 
+	* ActiveRecord objects. Once a ActiveRecord has been instaniated locating related entities
+	* may be done by bypassing the static ActiveRecord::find() method in replacement
+	* of one of the following methods.
+	* 
+	* 1.) $record->get[Entity]();
+	* 2.) $record->count[Entity]();
+	* 3.) $record->add[Entity]();
+	* 
+	* The dynamic get method is probably the simplest of all options. This method was manifested
+	* on behalf of the need for a way to rapidly locate entities related to the base entity. At its core
+	* the get method provides a lazy load functionality.
+	* 
+	*  $user->blogs == $user->getBlogs()
+	* 
+	* The former example shows the syntax used in most syntax to perform lazy loading. The ladder
+	* represents the syntax used in this system to load a collection of related items. The method
+	* call may seem uneeded to some but it has its purpose. The purpose it rooted in the abilility
+	* to further filter or sort those related items without resoring to some contribed string manipulation
+	* such as; $user->blogs_status_1_desc_created (yuck)
+	* 
+	* Instead the below syntax would be used to sort the returned collection and additionally filter 
+	* for a statuc of 1.
+	* 
+	* $user->getBlogs(array('status'=>1,'sort'=>array('created'=>'DESC')));
+	* 
+	* So the above scenario would return all the users blogs that have a status of 1 and sort them by 
+	* last created. Additionally, the result set will not be saved within the scope of the objects blogs
+	* property. This method is meant to act as a short-cut finder for relational mapping.
+	* 
+	* The count method functions exactly the same way but will return the total of items matched. So if you need
+	* to know the number of blogs a user has you could achieve such a task using the below syntax.
+	* 
+	* $user->countBlogs();
+	* 
+	* Additonally, you could count the number of inactive blogs by passing in the proper filter.
+	* 
+	* $user->countBlogs(array('status'=>0));
+	* 
+	* The count method is mostly intended for performing quick counts for pagination or summary information.
+	* 
+	* 
+	*/
+	,findRelatedPrefix = 'get'
+	,countRelatedPrefix = 'count'
+	,addRelatedPrefix = 'add';
 
-	private $_data;	
-	private $_changed;
+	private 
 	
-	private static $_db;
-	private static $_validation;
+	/*
+	* Data entity object that stores ActiveRecord data as key=>value combos. Data entity
+	* implements interface for arrayaccess so data may be accesed using array syntax IE. $data['username'].
+	* A ActiveRecord instance essentially decorates a ActiveRecordDataEntity thus, a ActiveRecord is interchangable
+	* with a ActiveRecordDataEntity. This was done soley for the purpose of separation and organization within
+	* the system. So that the ActiveRecord manages behavior and ActiveRecordDataEntity storage.
+	* 
+	* Another vital purpose of ActiveRecordDataEntity is to have a way to distinguish between arrays and storage
+	* object when creating a ActiveRecord. When one passes an array on construction every value within the array
+	* is cached as changed. Which means that when the ActiveRecord is saved all those columns will be updated or 
+	* generate a new record in the associated table to the model. In contrast when you send in a ActiveRecordDataEntity
+	* the information is not chached as saved. So calling save will have to affect unless you modify a property
+	* after construction. This differentiation is vital to the functionality of the ActiveRecordCollectionAgent
+	* which collects raw result data into a meaningful object hierarchy of records so that below syntax may be achieved
+	* through query point eager loading.
+	* 
+	* $arrUser = User::find(array('include'=>'blogs'));
+	* $arrUser->blogs[0]->title;
+	* 
+	*/
+	$_data
+	
+	/*
+	* The fields that have changed since ActiveRecord was created. This information is used
+	* by the save mechanism to update only fields that have changed rather than every field
+	* for the model.
+	*/
+	,$_changed;
+	
+	private static
+	
+	/*
+	* PDO database adapter 
+	*/
+	$_db
+	
+	/*
+	* Validation object 
+	*/
+	,$_validation;
 	
 	public function __construct() {
 	
@@ -229,6 +365,17 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 	
 	}
 	
+	/*
+	* The reason as to why I named this method casts alludes me to
+	* this day. However, due to uncertaintity of dependendencies
+	* am not going to change its name to something more appropriate like
+	* reset or flatten. 
+	* 
+	* Essentially though this called after saving a
+	* ActiveRecord do that its changed history is deleeted. This is done
+	* to avoid resaving the same information when a ActiveRecord is
+	* saved multiple times.
+	*/
 	public function cast() {
 		
 		$this->_changed = array();
@@ -488,10 +635,23 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 	
 	}
 	
+	/*
+	* The driving force behind the entire ActiveRecord finder. This is the method
+	* indrectly called by a ActiveRecord::find() that handles all the heavy labor and management
+	* of library dependencies.
+	*/
 	protected static function _find($pClassName,$pOptions) {
 		
 		if(self::isConnected()===false) throw new Exception('A database Adaptor has not been set for the '.__CLASS__.' Class.');
-	
+		
+		// ability to handle subqueries as root
+		
+		/*
+		* Moved the below responsbility to the ActiveRecordModelConfig::getModelConfig() method. When the method
+		* is passed a ActiveRecordSelectStatement it transforms it into a ActiveRecordDynamicModel object
+		* 
+		* $model = $pClassName instanceof IActiveRecordModelConfig?$pClassName:ActiveRecordModelConfig::getModelConfig($pClassName);
+		*/
 		$model = ActiveRecordModelConfig::getModelConfig($pClassName);
 		
 		$mode = !empty($pOptions) && is_array($pOptions[0])===false?array_shift($pOptions):self::findAll;
@@ -501,9 +661,9 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 		
 		if(strcmp($mode,self::findSelect)==0) return $select; // return without reseting count
 		
-		//echo '<p>',$select->toSql(),'</p>';
-		//echo '<pre>',print_r($select->getBindData()),'</pre>';
-		//return;
+		/*echo '<p>',$select->toSql(),'</p>';
+		echo '<pre>',print_r($select->getBindData()),'</pre>';
+		return;*/
 		
 		$stmt = $select->query(self::$_db);
 		ActiveRecordSelectNode::resetCount();
@@ -521,12 +681,62 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 		
 	}
 	
+	/*
+	* DPRECIATED: use findDynamic instead 
+	*/
+	public static function findByQuery() {
+		
+		$args = func_get_args();
+		
+		$model = array_shift($args);
+		
+		echo '<pre>',print_r($args),'</pre>';
+		
+		//self::_find($model,$args);
+		
+	}
+	
+	public static function findDynamic() {
+		
+		$arrArgs = func_get_args();
+		$model = array_shift($arrArgs);
+		
+		return call_user_func_array(__CLASS__.'::_find',array($model,$arrArgs));
+		
+	}
+	
+	/*
+	* The lazymanes object dump
+	* 
+	* User::find()->dump();
+	* 
+	* vs.
+	* 
+	* $users = User::find();
+	* echo '<pre>',print_r($users),'</pre>';
+	* 
+	* "ton" O work avoided
+	* 
+	* NOTE: Both ActiveRecord and ActiveRecordCollection implement
+	* the dumpable interface so a individual or collection of records
+	* may be dumped by calling the dump method on either.
+	*/
 	public function dump() {
 	
 		echo '<pre>',print_r($this),'</pre>';
 		
 	}
 	
+	/*
+	* If your feeling like or need to convert the contents of a ActiveRecord
+	* to a XML document then this is the method for you. This method
+	* handles all the heavy work of converting the ENTIRE
+	* object hierarchy to a comprehansive XML document.
+	* 
+	* NOTE: Both ActiveRecord and ActiveRecordCollection implement to
+	* xmlable interface so that either be converted to XML by calling the
+	* tuXML method.
+	*/
 	public function toXML() {
 
 		$dom = new ActiveRecordDOMElement($this);
@@ -540,6 +750,10 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 		
 		return new ActiveRecordDOMElement($this);
 	
+	}
+	
+	public static function foundRows() {
+		return self::$_db->query('SELECT FOUND_ROWS();')->fetchColumn();
 	}
 	
 	public static function isConnected() {
@@ -556,6 +770,30 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 	
 	public static function setValidation(IActiveRecordValidation $pValidation) {
 		self::$_validation = $pValidation;
+	}
+	
+	/*
+	* Auto-load all model files to avoid manually inclusion
+	* 
+	* @param str model directory path
+	* @return bool success/failure
+	*/
+	public static function loadModelFiles($strDirectory) {
+		
+		// check that directory exists
+		if(!is_dir($strDirectory)) {
+			throw new Exception("Directory $strDirectory not found when attempting to load models.");
+			return false;
+		}
+		
+		// include every model to avoid the requirement of manually including file (yuck)
+		foreach(scandir($strDirectory) as $strFile) {
+			if(strcmp($strFile,'.') == 0 || strcmp($strFile,'..') == 0) continue;
+			require_once("$strDirectory/$strFile");
+		}
+		
+		return true;
+		
 	}
 
 	abstract public static function find();

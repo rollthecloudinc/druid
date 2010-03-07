@@ -56,6 +56,14 @@ class ActiveRecordSelectStatement {
 		$this->_groupClause = new ActiveRecordGroupClause();
 		$this->_limitClause = new ActiveRecordLimitClause();
 		
+		/*
+		* When root node references a Dynamic model (select statement) include its columns and bind data 
+		*/
+		if($this->_root->getConfig() instanceof ActiveRecordDynamicModel) {
+			$this->_selectClause->select($this->_root,$this->_root->getConfig()->getFields(true));
+			$this->_fromData = array_merge($this->_fromData,$this->_root->getConfig()->getBindData());
+		}
+		
 		$this->_applyLimit();
 	
 	}
@@ -149,7 +157,12 @@ class ActiveRecordSelectStatement {
 	
 		$node = is_null($pNode)?$this->_root:$pNode;
 		
-		if(!is_null($pParent) && $pParent->getConfig() instanceof ActiveRecordDynamicModel) {
+		/*
+		* 3/6/10 - Added condition to skip this segment if the root node is a dynamic mode. 
+		* 
+		* Segment added: && $pRunner != 2
+		*/
+		if(!is_null($pParent) && $pParent->getConfig() instanceof ActiveRecordDynamicModel && $pRunner != 2) {
 			// momentary fix for subqueries that have includes.
 			// otherwise the include is not seen
 			if($node->hasSibling()) {
@@ -228,7 +241,7 @@ class ActiveRecordSelectStatement {
 		
 			}
 	
-		}			
+		}
 	
 	}
 	
@@ -248,7 +261,7 @@ class ActiveRecordSelectStatement {
 	}
 	
 	public function makeFromClause(ActiveRecordSelectNode $pNode=null,ActiveRecordSelectNode $pParent=null,$pRunner=1) {
-	
+		
 		$node = is_null($pNode)?$this->_root:$pNode;
 	
 		$this->_applyFrom($node,$pParent);
@@ -388,13 +401,13 @@ class ActiveRecordSelectStatement {
 	
 	protected function _applyFrom(ActiveRecordSelectNode $pNode,ActiveRecordSelectNode $pParent=null) {
 	
-	
 		if($pNode->getFindConfig()->hasAssociation()===true && !is_null($pParent)) {
 			$this->_applyAssociation($pNode,$pParent);
 			return;
 		}
-	
-		$joinType = $pNode->getFindConfig()->hasRequireJoin() && $pNode->getFindConfig()->getRequireJoin()===false?'LEFT':'INNER';
+		
+		// 3/7/10: changed LEFT to LEFT OUTER
+		$joinType = $pNode->getFindConfig()->hasRequireJoin() && $pNode->getFindConfig()->getRequireJoin()===false?'LEFT OUTER':'INNER';
 		$joinType = $pNode->getFindConfig()->hasJoinType()?$pNode->getFindConfig()->getJoinType():$joinType;
 		
 		if(is_null($pParent)===false && $pParent->getConfig()->hasBelongsToAndHasMany()===true && $pParent->getConfig()->getRelatedField($pNode->getConfig())=='') {
@@ -416,15 +429,79 @@ class ActiveRecordSelectStatement {
 	
 	// should make sure indexes exists
 	protected function _applyAssociation(ActiveRecordSelectNode $pNode,ActiveRecordSelectNode $pParent=null) {
-	
-		$joinType = $pNode->getFindConfig()->hasRequireJoin() && $pNode->getFindConfig()->getRequireJoin()===false?'LEFT':'INNER';
+		
+		// 3/7/10: changed LEFT to LEFT OUTER
+		$joinType = $pNode->getFindConfig()->hasRequireJoin() && $pNode->getFindConfig()->getRequireJoin()===false?'LEFT OUTER':'INNER';
 		$joinType = $pNode->getFindConfig()->hasJoinType()?$pNode->getFindConfig()->getJoinType():$joinType;
 		
 		$associations = array();
 		
 		foreach($pNode->getFindConfig()->getAssociation() as $parent=>$current) {
 			
-				$associations[] = 't'.$pParent->getUnique().'.`'.$parent.'` = t'.$pNode->getUnique().'.`'.$current.'`';
+				$strLeft = 't'.$pParent->getUnique().'.`'.$parent.'`';
+				$strRight = 't'.$pNode->getUnique().'.`'.$current.'`';
+				$strOperator = '=';
+				$boolReverse = false;
+				
+				/*
+				* Special case none field comparisions
+				* 
+				* t1.column IS NULL
+				* t1.column = 22 (int)
+				* t1.status = 'active' (string)
+				* t1.status BETWEEN 2 AND 5 (sql)
+				* 
+				* NOTE: NULL and (sql) only override the base equality comparision. All
+				* other (int) and (string) comparisions are made using the standard 
+				* equality operator.
+				* 
+				* For now these seem like the most likly scenarios. It seems highly
+				* unlikely to begin adding an override for the operator considering
+				* the performance hit in most cases.
+				* 
+				* @TODO: Make sure binding within FROM clause is allowed. 
+				* If not allowed the int and string values will be embedded
+				*/
+				if(strcasecmp('NULL',$parent) == 0) {
+					$strOperator = 'IS NULL';
+					$strLeft = '';
+					$boolReverse = true;
+				} else if(strpos($parent,' (int)') !== false) {
+					$this->_fromData[] = (int) str_replace(' (int)','',$parent);
+					$strLeft = '?';
+					$boolReverse = true;
+				} else if(strpos($parent,' (string)') !== false) {
+					$this->_fromData[] = str_replace(' (string)','',$parent);
+					$strLeft = '?';
+					$boolReverse = true;
+				} else if(strpos($parent,' (sql)') !== false) {
+					$strLeft = str_replace(' (sql)','',$parent);
+					$strOperator = '';
+					$boolReverse = true;
+				}
+				
+				if(strcasecmp('NULL',$current) == 0) {
+					$strOperator = 'IS NULL';
+					$strRight = '';
+				} else if(strpos($current,' (int)') !== false) {
+					$this->_fromData[] = str_replace(' (int)','',$current);
+					$strRight = '?';
+				} else if(strpos($current,' (string)') !== false) {
+					$this->_fromData[] = sprintf("'%s'",str_replace(' (string)','',$current));
+					$strRight = '?';
+				} else if(strpos($current,' (sql)') !== false) {
+					$strRight = str_replace(' (sql)','',$current);
+					$strOperator = '';
+				}
+				
+				/*
+				* Reverses format 
+				*/
+				if($boolReverse === true) {
+					$associations[] = "$strRight $strOperator $strLeft";
+				} else {
+					$associations[] = "$strLeft $strOperator $strRight";
+				}
 		
 		}
 		
@@ -687,6 +764,7 @@ class ActiveRecordSelectStatement {
 	protected function _buildSql() {
 	
 		$sql = '';
+		$findConfig = $this->_root->getFindConfig();
 		
 		$selectSql 		= 		$this->_selectClause->toSql();
 		$fromSql 		= 		$this->_fromClause;
@@ -696,7 +774,9 @@ class ActiveRecordSelectStatement {
 		$sortSql	 	= 		$this->_sortClause->toSql();
 		$limitSql		=		$this->_limitClause->toSql();
 		
-		$sql.= !empty($selectSql)?'SELECT '.$selectSql:'';
+		$sqlCalcFoundRows = $findConfig->getCount() === true?' SQL_CALC_FOUND_ROWS ':'';
+		
+		$sql.= !empty($selectSql)?'SELECT '.$sqlCalcFoundRows.$selectSql:'';
 		$sql.= !empty($fromSql)?' FROM '.$fromSql:'';
 		$sql.= !empty($whereSql)?' WHERE '.$whereSql:'';
 		$sql.= !empty($groupSql)?' GROUP BY '.$groupSql:'';

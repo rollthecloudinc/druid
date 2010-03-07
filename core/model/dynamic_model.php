@@ -17,15 +17,18 @@ class ActiveRecordDynamicModel extends ActiveRecordModelConfig {
 	
 	}
 	
-	public function getFields() {
+	public function getFields($boolAlias=false) {
 		
 		$fields = array();
 		
-		foreach($this->select->getSelectClause()->getFields() as $table) {
+		// used for remapping aliases to fields
+		$arrNodes = $this->select->getSelectClause()->getNodes();
+		
+		foreach($this->select->getSelectClause()->getFields() as $intIndex=>$table) {
 		
 			foreach($table as $field=>$alias) {
-			
-				$fields[] = $field;
+				
+				$fields[] = $boolAlias === true?"t{$arrNodes[$intIndex]->getUnique()}_$field":$field;
 			
 			}
 		
@@ -40,6 +43,10 @@ class ActiveRecordDynamicModel extends ActiveRecordModelConfig {
 	
 		return $this->select->getBindData();
 	
+	}
+	
+	public function getSelect() {
+		return $this->select;
 	}
 
 }

@@ -95,8 +95,7 @@ interface IActiveRecordFindConfig {
 	* the primary key field name. This can be done because the system relies
 	* on the fact that one primary key field exists per table. Thus, making it a matter
 	* of parsing for this "special" value and swapping it out with the actual
-	* primary key name from the table config object. This feature has not been implemented
-	* yet though.
+	* primary key name from the table config object.
 	*/
 	const id = ':pk';
 	
@@ -106,6 +105,11 @@ interface IActiveRecordFindConfig {
 	* to negate the default behavior of applying it.
 	*/
 	const findIgnoreModelFilter = 'modelFilter';
+	
+	/*
+	* If true adds SQL_CALC_FOUND_ROWS to beginning of query
+	*/
+	const findCount = 'count';
 
 	public function getInclude();
 	public function getLimit();
@@ -128,6 +132,7 @@ interface IActiveRecordFindConfig {
 	public function getAssociation();
 	public function getAssociationPropertyName();
 	public function getAssociationPropertyType();
+	public function getCount();
 	
 	public function hasInclude();
 	public function hasLimit();
@@ -150,6 +155,7 @@ interface IActiveRecordFindConfig {
 	public function hasAssociation();
 	public function hasAssociationPropertyName();
 	public function hasAssociationPropertyType();
+	public function hasCount();
 
 }
 ?>

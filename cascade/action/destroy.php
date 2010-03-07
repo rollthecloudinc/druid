@@ -25,8 +25,6 @@ class ActiveRecordDestroy implements IActiveRecordCascadeAction {
 		for($i=($total-1);$i>=0;$i--) {
 		
 			foreach($this->queries[$i] as $query) {
-				
-				//$query->showQuery();
 			
 				try {
 

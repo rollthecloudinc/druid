@@ -23,6 +23,7 @@ class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 	protected $_association;
 	protected $_associationPropertyName;
 	protected $_associationPropertyType;
+	protected $_count;
 
 	public function __construct($pOptions) {
 	
@@ -130,6 +131,11 @@ class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 		if(array_key_exists(IActiveRecordFindConfig::findAssociationPropertyType,$pOptions)) {
 			$this->setAssociationPropertyType($pOptions[IActiveRecordFindConfig::findAssociationPropertyType]);
 			unset($pOptions[IActiveRecordFindConfig::findAssociationPropertyType]);
+		}
+		
+		if(array_key_exists(IActiveRecordFindConfig::findCount,$pOptions)) {
+			$this->setCount($pOptions[IActiveRecordFindConfig::findCount]);
+			unset($pOptions[IActiveRecordFindConfig::findCount]);
 		}
 			
 		if(!empty($pOptions)) $this->setMagicalFilter($pOptions);
@@ -269,6 +275,16 @@ class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 		$this->_associationPropertyType = $pPropertyType;	
 	}
 	
+	public function setCount($pCount) {
+	
+		if(is_bool($pCount)) {
+	
+			$this->_count = $pCount;
+		
+		}
+	
+	}
+	
 	// getters
 	
 	public function getInclude() {
@@ -397,6 +413,12 @@ class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 	
 	}
 	
+	public function getCount() {
+	
+		return $this->_count;
+	
+	}
+	
 	// has methods
 
 	public function hasInclude() {
@@ -522,6 +544,12 @@ class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 	public function hasAssociationPropertyType() {
 	
 		return is_null($this->_associationPropertyType)?false:true;
+	
+	}
+	
+	public function hasCount() {
+	
+		return is_null($this->_count)?false:true;
 	
 	}
 	

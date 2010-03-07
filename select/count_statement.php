@@ -30,7 +30,7 @@ class ActiveRecordCountStatement extends ActiveRecordSelectStatement {
 		$this->_applyFrom($pNode,$pParent);
 		
 		//$this->_applySelect($pNode);
-		$this->_applyFilter($pNode);
+		$this->_applyFilter($pNode,$pParent);
 		//$this->_applySort($pNode);
 		//$this->_applyGroup($pNode);
 		//$this->_applyHaving($pNode);

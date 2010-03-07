@@ -517,6 +517,13 @@ class ActiveRecordModelConfig implements IActiveRecordModelConfig {
 	}
 	
 	public static function getModelConfig($pClassName) {
+		
+		/*
+		* Select statement can be read into a model at runtime. 
+		*/
+		if($pClassName instanceof ActiveRecordSelectStatement) {
+			return new ActiveRecordDynamicModel($pClassName);
+		}
 	
 		return array_key_exists($pClassName,self::$_configured)===true?self::$_configured[$pClassName]:new ActiveRecordModelConfig($pClassName);
 	
