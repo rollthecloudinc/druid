@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<active_record>
+	<models>
+		<directory>model</directory>
+	</models>
+	<connection>
+		<host>localhost</host>
+		<password>ghj678iuhjk</password>
+		<user>root</user>
+		<name>database</name>
+	</connection>
+</active_record>

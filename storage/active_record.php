@@ -15,7 +15,7 @@ require_once($d.'../cascade/action/deactivate.php');
 require_once($d.'../core/validation/validation.php');
 abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,ActiveRecordSavable,ActiveRecordDestroyable,IActiveRecordXML,ActiveRecordDumpable {
 
-	const 
+	const
 	
 	/*
 	* Optional [first] argument for ActiveRecord::find() method to change intended
@@ -162,6 +162,16 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 	$_db
 	
 	/*
+	* Absolute path to configuration file 
+	*/
+	,$_config
+	
+	/*
+	* Whether or not model files have been loaded 
+	*/
+	,$_boolLoadedModels
+	
+	/*
 	* Validation object 
 	*/
 	,$_validation;
@@ -171,7 +181,12 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 		$this->_data = new ActiveRecordDataEntity();
 		$this->_changed = array();
 		
-		if(self::isConnected()===false) throw new Exception('A database Adaptor has not been set for the '.__CLASS__.' Class.');
+		if(self::getConnection() === null) {
+			throw new Exception('A database connection could not be established');
+		}
+		
+		// auto load model files
+		self::loadModelFiles();
 		
 		$args = func_get_args();
 		
@@ -642,7 +657,12 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 	*/
 	protected static function _find($pClassName,$pOptions) {
 		
-		if(self::isConnected()===false) throw new Exception('A database Adaptor has not been set for the '.__CLASS__.' Class.');
+		if(self::getConnection() === null) {
+			throw new Exception('A database connection could not be established');
+		}
+		
+		// load model files
+		self::loadModelFiles();
 		
 		// ability to handle subqueries as root
 		
@@ -682,7 +702,7 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 	}
 	
 	/*
-	* DPRECIATED: use findDynamic instead 
+	* DPRECATED: use findDynamic instead 
 	*/
 	public static function findByQuery() {
 		
@@ -756,8 +776,23 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 		return self::$_db->query('SELECT FOUND_ROWS();')->fetchColumn();
 	}
 	
+	/*
+	* Check for database connection
+	* 
+	* @return bool yes/no
+	*/
 	public static function isConnected() {
-		return is_null(self::$_db)?false:true;
+		
+		$boolConnected = self::$_db === null?false:true;
+		
+		/*
+		* Attempt to automate connection 
+		*/
+		if($boolConnected === false) {
+			self::_establishConnection();
+		}
+		
+		return self::$_db === null?false:true;
 	}
 	
 	public static function setConnection(PDO $pDb) {
@@ -765,6 +800,11 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 	}
 	
 	public static function getConnection() {
+		
+		if(self::$_db === null) {
+			self::_establishConnection();
+		}
+		
 		return self::$_db;
 	}
 	
@@ -773,26 +813,116 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 	}
 	
 	/*
+	* Establishes database connection from config file 
+	*/
+	private static function _establishConnection() {
+		
+		/*
+		* Get config file 
+		*/
+		$objConfig = self::getConfig();
+		
+		/*
+		* Make sure config file exists and loaded without errors 
+		*/
+		if($objConfig === null) {
+			return;
+		}
+		
+		/*
+		* Config has been loaded sucessfully continue to extract
+		* connection information. 
+		*/
+		$strHost = (string) $objConfig->connection->host;
+		$strUser = (string) $objConfig->connection->user;
+		$strPassword = (string) $objConfig->connection->password;
+		$strDBName = (string) $objConfig->connection->name;
+		
+		/*
+		* Instaniate connection 
+		*/
+		self::$_db = new ActiveRecordConnection($strHost,$strUser,$strDBName,$strPassword);
+		
+	}
+	
+	/*
+	* Get config XML object
+	* 
+	* @return obj SimpleXMLObject
+	*/
+	public static function getConfig() {
+		$objConfig = simplexml_load_file(self::getConfigFilePath());
+		return $objConfig === false?null:$objConfig;
+	}
+	
+	/*
+	* Get absolute path to config file path 
+	* 
+	* @return str config file path
+	*/
+	public static function getConfigFilePath() {
+		
+		/*
+		* When no file path has been created make it 
+		*/
+		if(self::$_config === null) {
+			// base location is lib root in config.xml
+			self::$_config = str_replace('//','/',dirname(__FILE__).'/').'../config.xml';
+		}
+		
+		return self::$_config;
+	}
+	
+	/*
+	* Set absolute config file path 
+	* 
+	* @param str config file path
+	*/
+	public static function setConfigFilePath($strConfig) {
+		self::$_config = $strConfig;
+	}
+	
+	/*
 	* Auto-load all model files to avoid manually inclusion
 	* 
 	* @param str model directory path
 	* @return bool success/failure
 	*/
-	public static function loadModelFiles($strDirectory) {
+	public static function loadModelFiles() {
+		
+		if(self::$_boolLoadedModels !== null) {
+			return true;
+		}
+		
+		/*
+		* Get models directory 
+		*/
+		$objConfig = self::getConfig();
+		$strDirectory = (string) ActiveRecord::getConfig()->models->directory;
+		$strModelsDirectory = str_replace('//','/',dirname(__FILE__).'/')."../$strDirectory";
 		
 		// check that directory exists
-		if(!is_dir($strDirectory)) {
-			throw new Exception("Directory $strDirectory not found when attempting to load models.");
+		if(!is_dir($strModelsDirectory)) {
+			self::$_boolLoadedModels = false;
+			throw new Exception("Directory $strModelsDirectory not found when attempting to load models.");
 			return false;
 		}
 		
 		// include every model to avoid the requirement of manually including file (yuck)
-		foreach(scandir($strDirectory) as $strFile) {
-			if(strcmp($strFile,'.') == 0 || strcmp($strFile,'..') == 0) continue;
-			require_once("$strDirectory/$strFile");
+		foreach(scandir($strModelsDirectory) as $strFile) {
+			if((strcmp($strFile,'.') == 0 || strcmp($strFile,'..') == 0) || is_dir("$strModelsDirectory/$strFile")) continue;
+			require_once("$strModelsDirectory/$strFile");
 		}
 		
+		self::$_boolLoadedModels = true;
 		return true;
+		
+	}
+	
+	/*
+	* Auto connect to database using configuration file information 
+	*/
+	private static function _makeConnection() {
 		
 	}
 
