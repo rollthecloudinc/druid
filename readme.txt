@@ -2,7 +2,8 @@ Basic library Usage
 ----------------------------------
 
 1.) Go to config file and fill in database connection info
-2.) Include or run main.php
+2.) Set write permissions on root library directory
+3.) Include or run main.php
 
 NOTE: The first time main.php is ran it will crawl through
 the defined database in the config file and generate all base
