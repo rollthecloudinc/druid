@@ -20,3 +20,17 @@ or define a connection as this is all handled internally by the library.
 If you need to access the connection object once instantiated you
 may do so by calling ActiveRecord::getConnection() which returns
 the PDO instance used to connect to the defined database in the config.
+
+Additional
+-----------------------------------
+
+Table names should be plural:
+
+IE. blogs NOT blog
+
+Model classes will be singular:
+
+User::find() NOT Users::find()
+
+----------------------------------
+* More documentation to come
