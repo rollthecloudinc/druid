@@ -33,4 +33,13 @@ Model classes will be singular:
 User::find() NOT Users::find()
 
 ----------------------------------
+
+If you have ran the main script and would like to start
+over just dump the model directory. The presence of the model
+directory is what dictates the rake script being ran. So once
+you remove the model directory the next time the main script
+is ran it will regenerate the model files using the current
+config definition.
+
+----------------------------------
 * More documentation to come
