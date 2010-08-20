@@ -471,8 +471,8 @@ class ActiveRecordSelectStatement {
 					$strLeft = '?';
 					$boolReverse = true;
 				} else if(strpos($parent,' (string)') !== false) {
-					$this->_fromData[] = str_replace(' (string)','',$parent);
-					$strLeft = '?';
+					$strLeft = '"'.str_replace(' (string)','',$parent).'"';
+					//$strLeft = '?';
 					$boolReverse = true;
 				} else if(strpos($parent,' (sql)') !== false) {
 					$strLeft = str_replace(' (sql)','',$parent);
