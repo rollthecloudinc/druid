@@ -157,7 +157,7 @@ class ActiveRecordSelectClause {
 	
 	}
 	
-    protected function _transformFilter($pTransform,$pTable,$pTableAlias) {
+    protected function _transformFilter($pTransform,$pTable,$pTableAlias,$pIndex,$pField) {
     	
 		$transform = is_array($pTransform)?$pTransform:array($pTransform);
 
