@@ -11,15 +11,16 @@ class ActiveRecordCollectionAgent {
 	private $_records;
 	
 	private $_fields;
+	private $_transform;
 	private $_selectNodes;
 	
 	public function __construct(ActiveRecordSelectStatement $pSelect) {
 	
 		$this->_primaryKeys = array();
-		//$this->_records = array(); probably a mistake
 		$this->_records = new ActiveRecordCollection();
 		$this->_selectNodes = $pSelect->getSelectClause()->getNodes();
 		$this->_fields = $pSelect->getSelectClause()->getFields();
+		$this->_transform = $pSelect->getSelectClause()->getTransform();
 	
 	}
 	
@@ -154,7 +155,7 @@ class ActiveRecordCollectionAgent {
 	
 	}
 	
-	protected function _loadData(IActiveRecordDataEntity $pRecord,$pData,ActiveRecordSelectNode $pNode) {
+	protected function _loadData(IActiveRecordDataEntity $pRecord,$pData,ActiveRecordSelectNode $pNode,IActiveRecordDataEntity $pRealRecord) {
 	
 		$index = array_search($pNode,$this->_selectNodes);
 		
@@ -172,7 +173,7 @@ class ActiveRecordCollectionAgent {
 		
 		foreach($fields as $fieldName=>$select) {
 						
-			$pRecord->setProperty($fieldName,$pData['t'.$unique.'_'.$fieldName]);
+			$pRecord->setProperty($fieldName,$this->_transformValue($pRealRecord,$index,$fieldName,$pData['t'.$unique.'_'.$fieldName]));
 		
 		}
 	
@@ -247,6 +248,56 @@ class ActiveRecordCollectionAgent {
 		
 		return 'many';	
 	
+	}
+	
+	/*
+	* Apply field level callback mutation function or method after query has been executed. An
+	* example of use for this functionality is to unserialize serialized data. However, any
+	* post process mutation may be applied by a valid function, static function or object method. 
+	* 
+	* @param obj ActiveRecordDataEntity object loaded with data
+	* @param int node index
+	* @param str field name
+	* @param obj ActiveRecord object containing ActiveRecordDataEntity instance
+	*/
+	protected function _transformValue(IActiveRecordDataEntity $pRecord,$pIndex,$pField,$pValue) {
+		
+		/*
+		* Check the tranform array to see if a post query mutation exists for field 
+		*/
+		if(!isset($this->_transform[$pIndex],$this->_transform[$pIndex][$pField])) {
+			return $pValue;
+		}
+		
+		/*
+		* Extract type of callback, method or function name, prep arguments for call_user_func_array 
+		*/
+		$transform = $this->_transform[$pIndex][$pField];		
+		$type = array_shift($transform);
+		$func = array_shift($transform);
+		$args = empty($transform)?array():$transform;
+		
+		array_unshift($args,$pValue);
+		
+		/*
+	 	* Valid post query callback strings:
+	 	* 
+	 	* self::
+	 	* $this->
+	 	* php::
+		*/
+		switch($type) {
+			case 'self::':
+				return call_user_func_array(get_class($pRecord)."::$func",$args);
+				
+			case '$this->':
+				return call_user_func_array(array($pRecord,$func),$args);
+				
+			default:
+				return call_user_func_array($func,$args);
+				
+		}
+		
 	}
 
 }

@@ -9,11 +9,18 @@ class ActiveRecordSelectClause {
 	private $_nodes;
 	private $_fields;
 	
+	/*
+	* Transformations that will be applied after query has been executed
+	* using callback php function, static method or object method. 
+	*/
+	private $_transform;
+	
 	public function __construct() {
 	
 		$this->_selectData = array();
 		$this->_nodes = array();
 		$this->_fields = array();
+		$this->_transform = array();
 	
 	}
 	
@@ -32,6 +39,12 @@ class ActiveRecordSelectClause {
 	public function getFields() {
 	
 		return $this->_fields;
+	
+	}
+	
+	public function getTransform() {
+	
+		return $this->_transform;
 	
 	}
 	
@@ -72,7 +85,7 @@ class ActiveRecordSelectClause {
     			
     		if($pApplyTransform===true && array_key_exists($field,$transformations) && array_key_exists(self::selectTransformation,$transformations[$field])) {
     			
-    			$str = $this->_transformFilter($transformations[$field][self::selectTransformation],$className,$alias);
+    			$str = $this->_transformFilter($transformations[$field][self::selectTransformation],$className,$alias,$index,$field);
     			
     		} else {
     			
@@ -150,6 +163,17 @@ class ActiveRecordSelectClause {
 
 		$statement = $transform[0];
 		$data = array();
+		
+    	/*
+		* Extract post query transformation identified keywords self::, php:: and $this->
+		* at the beginning of transform string. Transformations that fall under these specifications
+		* will be applied after the query has been executed during the collection step. This is a great
+		* way to cast 0 or 1 fields to true booleans or unserialize a serialized field.
+		*/
+		if(strpos($statement,'$this->') === 0 || strpos($statement,'self::') === 0 || strpos($statement,'php::') === 0) {
+			list($callback,$statement) = explode(' ',preg_replace('/(\$this->|self::|php::)([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)$/',"$1#$2 $3",$statement),2);
+			$this->_transform[$pIndex][$pField] = explode('#',$callback,2);
+		}
 
 		$matches = array();
 		preg_match_all('/\$[1-9][0-9]*?/',$statement,$matches,PREG_OFFSET_CAPTURE);
