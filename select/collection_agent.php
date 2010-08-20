@@ -103,7 +103,7 @@ class ActiveRecordCollectionAgent {
 			}
 				
 			$record = new $className($entity);			
-			$this->_loadData($entity,$pData,$pNode);
+			$this->_loadData($entity,$pData,$pNode,$record);
 			
 			$this->_primaryKeys[] = $primaryKey;
 			$this->_records[] = $record;
@@ -141,7 +141,7 @@ class ActiveRecordCollectionAgent {
 			$className = $pNode->getConfig()->getClassName();
 			$record = new $className($entity);
 			
-			$this->_loadData($entity,$pData,$pNode);
+			$this->_loadData($entity,$pData,$pNode,$record);
 			
 			$pParent->addRecord($propertyName,$record,strcmp('one',$oneOrMany)==0?false:true);
 			
