@@ -155,6 +155,57 @@ class ActiveRecordCollection implements arrayaccess,IteratorAggregate,Countable,
 		}
 	
 	}
+	
+	/*
+	* Iterates over collection calling a function for each row. Maybe
+	* used to quickly build out list or table. 
+	*/
+	public function loop($func,$else=null) {
+		
+		if(!empty($this->container)) {
+		
+			if(!is_array($func) && strpos($func,' ') !== false) {
+				$func = create_function('$record',$func);
+			}
+			
+			/*
+			* Loop state passed to callback
+			* - first (first item?)
+			* - last (last item?)
+			* - total (total number of items)
+			* - odd (odd item?)
+			* - index (current index) 
+			*/
+			$loop = new StdClass();
+			$loop->total = count($this)-1;
+			$loop->index = 0;
+			$loop->odd = false;
+			
+			foreach($this as $row) {
+				
+				$loop->first = $loop->index == 0;
+				$loop->last = $loop->index == $loop->total;
+				$loop->odd = !$loop->odd; 
+				
+				call_user_func_array($func,array($row,$loop));
+				
+				$loop->index++;
+			}
+		
+		/*
+		* Happens when collection is empty and is supplied. This may be used
+		* to display a message for the empty result set or something. 
+		*/
+		} else if($else !== null) {
+			
+			if(!is_array($else) && strpos($else,' ') !== false) {
+				$else = create_function('',$else);
+			}
+			
+			call_user_func_array($else,array());
+			
+		}
+	}
 
 }
 ?>
