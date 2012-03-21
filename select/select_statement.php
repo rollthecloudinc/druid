@@ -87,7 +87,7 @@ class ActiveRecordSelectStatement {
 		
 		try {
 		
-			return $query->query($pDb);
+			return ActiveRecord::query($query,$pDb,ActiveRecordQuery::SELECT,$this);
 		
 		
 		} catch(Exception $e) {

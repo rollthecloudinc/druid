@@ -43,3 +43,24 @@ config definition.
 
 ----------------------------------
 * More documentation to come
+
+
+Query Transformations
+
+Selects support both pre and post query transformations. A pre
+query transformation can be used in the form of a string
+with special placehoders. Practical uses for this is to easily
+convert 1 or 0 to true and false. Additionally at the save
+stage a transform can be applied to properly convery true/false
+value to 1/0 for the database.
+
+Also, both select and save support transformation callbacks in the form
+of either a static/public method on the active record or function. This
+can be useful for serialized data. In the case of a serialzed column a select
+callback transformation can be used to unserialize the data. Yet, a save callback
+transformation can be used to serialize the data before saving it to the presistent
+storage facility.
+
+
+
+

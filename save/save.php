@@ -100,8 +100,7 @@ class ActiveRecordSave {
 			
 			try {
 				
-				// $query->showQuery();
-				$query->query($db);
+				ActiveRecord::query($query,$db,ActiveRecordQuery::UPDATE,$this);
 				
 			} catch(Exception $e) {
 				
@@ -124,8 +123,7 @@ class ActiveRecordSave {
 			
 			try {
 				
-				//$query->showQuery();
-				$query->query($db);
+				ActiveRecord::query($query,$db,ActiveRecordQuery::INSERT,$this);
 				
 			} catch(Exception $e) {
 				

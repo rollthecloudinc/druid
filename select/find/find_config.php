@@ -2,28 +2,30 @@
 require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../interface/find_config.php');
 class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 	
-	protected $_include;
-	protected $_limit;
-	protected $_offset;
-	protected $_select;
-	protected $_nonSelect;
-	protected $_dynamic;
-	protected $_condition;
-	protected $_conditionMap;
-	protected $_filter;
-	protected $_group;
-	protected $_sort;
-	protected $_having;
-	protected $_joinType;
-	protected $_requireJoin;
-	protected $_magicalFilter;
-	protected $_invisible;
-	protected $_empty;
-	protected $_ignoreModelFilter;
-	protected $_association;
-	protected $_associationPropertyName;
-	protected $_associationPropertyType;
-	protected $_count;
+	protected 
+	
+	 $_include
+	,$_limit
+	,$_offset
+	,$_select
+	,$_nonSelect
+	,$_dynamic
+	,$_condition
+	,$_conditionMap
+	,$_filter
+	,$_group
+	,$_sort
+	,$_having
+	,$_joinType
+	,$_requireJoin
+	,$_magicalFilter
+	,$_invisible
+	,$_empty
+	,$_ignoreModelFilter
+	,$_association
+	,$_associationPropertyName
+	,$_associationPropertyType
+	,$_count;
 
 	public function __construct($pOptions) {
 	
@@ -145,35 +147,70 @@ class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 	// setters
 	
 	public function setInclude($pInclude) {
+		
+		/*
+		* Compatible with comma separated list values. IE. content,project
+		* This eliminates some typing and makes defining multiple includes
+		* a little less tedious providing an alternative to the standard array format. 
+		*/
+		if( is_string($pInclude) && strpos($pInclude,',') !== false ) {
+			$pInclude = explode(',',$pInclude);
+		}
 	
 		$this->_include = is_array($pInclude)?$pInclude:array($pInclude);
 	
 	}
 	
+	/*
+	* Number of rows to return
+	* 
+	* @param int number of rows
+	*/
 	public function setLimit($pLimit) {
 	
 		$this->_limit = $pLimit;
 	
 	}
 	
+	/*
+	*  The query offset
+	*  
+	*  @param int query offset
+	*/
 	public function setOffset($pOffset) {
 	
 		$this->_offset = $pOffset;
 	
 	}
 	
+	/*
+	* Columns to select
+	* 
+	* @param mix array of column names or single column string
+	*/
 	public function setSelect($pSelect) {
 	
 		$this->_select = is_array($pSelect)?$pSelect:array($pSelect);
 	
 	}
 	
+	/*
+	* Columns to deselect (remove from selection)
+	* 
+	* @param mix column names to remove or single column name to remove
+	*/
 	public function setNonSelect($pNonSelect) {
 	
 		$this->_nonSelect = is_array($pNonSelect)?$pNonSelect:array($pNonSelect);
 	
 	}
 	
+	/*
+	* Calculated column defitions that will be overloaded as properties
+	* 
+	* @param array associative array where the key is the intended property
+	*              name and value is the SQL to derive the value.
+	*/
 	public function setDynamic($pDynamic) {
 	
 		$this->_dynamic = $pDynamic;
@@ -205,7 +242,7 @@ class ActiveRecordFindConfig implements IActiveRecordFindConfig {
 	}
 	
 	public function setSort($pSort) {
-	
+		
 		$this->_sort = is_array($pSort)?$pSort:array($pSort);
 	
 	}

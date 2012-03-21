@@ -97,7 +97,7 @@ interface IActiveRecordFindConfig {
 	* of parsing for this "special" value and swapping it out with the actual
 	* primary key name from the table config object.
 	*/
-	const id = ':pk';
+	const id = ':id';
 	
 	/*
 	* bool determines whether to apply model filter when specified for a model. By default

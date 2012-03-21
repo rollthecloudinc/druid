@@ -382,8 +382,7 @@ class ActiveRecordModelConfig implements IActiveRecordModelConfig {
 			
 				$referenceModel = is_array($reference) && !empty($reference)?array_shift($reference):$reference;
 				
-				if(strcmp($referenceModel,$className)==0) {
-				
+				if(strcasecmp($referenceModel,$className)==0) {
 					self::$_resolvedAssociations[$this->getClassName()][$className] = $index;
 					self::$_resolvedAssociationTypes[$this->getClassName()][$className] = 'one';
 					return self::$_resolvedAssociations[$this->getClassName()][$className];

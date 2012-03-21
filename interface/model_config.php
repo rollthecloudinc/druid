@@ -19,7 +19,8 @@ interface IActiveRecordModelConfig {
 	const hasOne 				= 'hasOne';
 	const hasMany 				= 'hasMany';
 	const belongsTo 			= 'belongsTo';
-	const belongsToAndHasMany 	= 'belongsToAndHasMany';	
+	const belongsToAndHasMany 	= 'belongsToAndHasMany';
+	// const fullText				= 'fullText';	
 
 	public function getClassName();
 	public function getTable();
@@ -35,7 +36,7 @@ interface IActiveRecordModelConfig {
 	public function getDefaultFilter();
 	public function getCascadeDelete();
 	public function getLinks();
-	public function gethasOne();
+	public function getHasOne();
 	public function getHasMany();
 	public function getBelongsTo();
 	public function getBelongsToAndHasMany();

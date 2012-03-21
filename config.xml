@@ -5,8 +5,8 @@
 	</models>
 	<connection>
 		<host>localhost</host>
-		<password>ghj678iuhjk</password>
+		<password>todd</password>
 		<user>root</user>
-		<name>database</name>
+		<name>dev_active_record</name>
 	</connection>
 </active_record>

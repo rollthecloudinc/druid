@@ -34,7 +34,7 @@ class ActiveRecordValidation implements IActiveRecordValidation {
 		$this->clear();
 	}
 	
-	public function Invalid() {
+	public function invalid() {
 		return array_keys($this->_validated,false);
 	}
 	

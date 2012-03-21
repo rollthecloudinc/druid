@@ -76,6 +76,15 @@ class ActiveRecordWhereClause {
     		$operand = $s['operand'];
     		$column = $s['column'];
     		
+    		/*
+    		* Allow null to be passed in as a value 
+    		*/
+    		if( $filter === null && strcmp($operand,'=') === 0) {
+				$selector = "$column IS";
+				$operand = 'IS';
+				$filter = array('NULL');
+    		}
+    		
     		if($filter instanceof ActiveRecordSelectStatement) {
     			
     			// support for exists and not exists

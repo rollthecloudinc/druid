@@ -3,6 +3,16 @@
 * All Queries are routed and executed through instances of this class
 */
 class ActiveRecordQuery {
+	
+	/*
+	* Query type constants 
+	*/
+	const 
+	
+	SELECT 		= 'select'
+	,UPDATE		= 'update'
+	,INSERT 	= 'insert'
+	,DELETE		= 'delete';
 
 	protected $data;
 	protected $sql;

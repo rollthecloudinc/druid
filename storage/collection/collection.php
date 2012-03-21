@@ -164,7 +164,7 @@ class ActiveRecordCollection implements arrayaccess,IteratorAggregate,Countable,
 		
 		if(!empty($this->container)) {
 		
-			if(!is_array($func) && strpos($func,' ') !== false) {
+			if(!is_callable($func) && !is_array($func) && strpos($func,' ') !== false) {
 				$func = create_function('$record',$func);
 			}
 			
@@ -205,6 +205,16 @@ class ActiveRecordCollection implements arrayaccess,IteratorAggregate,Countable,
 			call_user_func_array($else,array());
 			
 		}
+	}
+	
+	/*
+	* Get item at specified index in collection
+	* 
+	* @param int index
+	* @return obj ActiveRecord instance
+	*/
+	public function get($index) {
+		return $this->container[$index];
 	}
 
 }

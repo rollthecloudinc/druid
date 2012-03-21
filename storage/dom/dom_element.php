@@ -69,7 +69,7 @@ class ActiveRecordDOMElement extends DOMDocument {
 			} else {
 				
 				// here 
-				$convertedString = is_null($value)?'':mb_convert_encoding($value,'UTF-8',array('ASCII','ISO-8859-1','CP1252','UTF-8'));
+				$convertedString = is_null($value)?'':mb_convert_encoding((is_bool($value)?intval($value):$value),'UTF-8',array('ASCII','ISO-8859-1','CP1252','UTF-8'));
 				//$convertedString = is_null($value)?'':$this->_convertEncoding($value);
 				$textNode = $this->createTextNode($convertedString);
 				$objectNode->appendChild($textNode);

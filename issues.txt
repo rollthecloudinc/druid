@@ -1,0 +1,36 @@
+No built in support for hierarchical structures:
+
+1.) adjacency list
+2.) nested set
+3.) Closure table
+4.) path enumeration
+
+--------------------------------------------------
+
+No mechanism to do reverse of rake ie. go from model
+definitions to build out database tables.
+
+--------------------------------------------------
+
+No support for namepaces which I believe could be highly 
+beneficial.
+
+--------------------------------------------------
+
+No documentation and commenting is almost inexistent.
+
+--------------------------------------------------
+
+Local copy out of sync with main branch on git.
+
+--------------------------------------------------
+
+Add git ignore for model directory. Nothing in the model
+directory should be version controlled. To that light perhaps
+move model directory outside of library.
+
+--------------------------------------------------
+
+Move configuration outside of library. I'm thinking
+this is the best move so a single library copy can be used to
+manage multiple configurations or model directories.

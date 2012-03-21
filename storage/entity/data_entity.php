@@ -30,7 +30,6 @@ class ActiveRecordDataEntity implements IActiveRecordDataEntity {
 	
 		if($this->hasProperty($pName)===true) {
 		
-		
 			return $this->_data[$pName][0];
 		
 		}

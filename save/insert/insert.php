@@ -228,13 +228,25 @@ class ActiveRecordInsert implements Countable {
 	
 		$statement = is_array($pFieldTransform)?$pFieldTransform[0]:$pFieldTransform;
 		$transform = is_array($pFieldTransform)?$pFieldTransform:array();
+		
+		/*
+		* Extract post query transformation identified keywords self::, php:: and $this->
+		* at the beginning of transform string. Transformations that fall under these specifications
+		* will be applied after the query has been executed during the collection step. This is a great
+		* way to cast 0 or 1 fields to true booleans or unserialize a serialized field.
+		*/
+		$modifier = null;
+		if(strpos($statement,'$this->') === 0 || strpos($statement,'self::') === 0 || strpos($statement,'php::') === 0) {
+			list($callback,$statement) = explode(' ',preg_replace('/(\$this->|self::|php::)([a-zA-Z_][a-zA-Z0-9_]*?)\((.*?)\)$/',"$1#$2 $3",$statement),2);
+			$modifier = explode('#',$callback,2);
+		}
 	
 		$matches = array();
 		preg_match_all('/\$[1-9][0-9]*?|\{.*?\}/',$statement,$matches,PREG_OFFSET_CAPTURE);
 		
 		if(array_key_exists(0,$matches) && !empty($matches[0])) {
 		
-			$offset = 0;
+			$offset = 0; $args = array();
 			foreach($matches[0] as $match) {
 			
 				if(strcmp(substr($match[0],0,1),'$')==0) {
@@ -244,7 +256,11 @@ class ActiveRecordInsert implements Countable {
 					
 					if(array_key_exists($index,$pFieldTransform)) {
 					
-						$this->data[$pKey][] = $pFieldTransform[$index];
+						if($modifier === null) $this->data[$pKey][] = $pFieldTransform[$index];
+						
+						// arguments passed to callback tranform
+						$args[] = $pFieldTransform[$index];
+						
 						$statement = substr_replace($statement,'?',($match[1]+$offset),strlen($match[0]));
 						$offset-= (strlen($match[0])-1);
 					
@@ -269,7 +285,11 @@ class ActiveRecordInsert implements Countable {
 						
 						} else {
 						
-							$this->data[$pKey][] = $pRecord->getProperty($property);
+							if($modifier === null) $this->data[$pKey][] = $pRecord->getProperty($property);
+							
+							// arguments passed to transform callback
+							$args[] = $pRecord->getProperty($property);
+							
 							$statement = substr_replace($statement,'?',($match[1]+$offset),strlen($match[0]));
 							$offset-= (strlen($match[0])-1);
 						
@@ -282,6 +302,24 @@ class ActiveRecordInsert implements Countable {
 			
 			}
 		
+		}
+		
+		// PHP/callback modifier
+		if($modifier !== null) {
+			
+			switch($modifier[0]) {
+				case 'self::':
+					$this->data[$pKey][] = call_user_func_array(get_class($pRecord)."::{$modifier[1]}",$args);
+					return '?';
+					
+				case '$this->':
+					$this->data[$pKey][] = call_user_func_array(array($pRecord,$modifier[1]),$args);
+					return '?';
+					
+				default:
+					$this->data[$pKey][] =  call_user_func_array($modifier[0],$args);	
+					return '?';
+			}
 		}
 		
 		return $statement;

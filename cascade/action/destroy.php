@@ -28,7 +28,7 @@ class ActiveRecordDestroy implements IActiveRecordCascadeAction {
 			
 				try {
 
-					$query->query($db);
+					ActiveRecord::query($query,$db,ActiveRecordQuery::DELETE,$this);
 				
 				} catch(Exception $e) {
 				

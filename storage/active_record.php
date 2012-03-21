@@ -674,7 +674,7 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 		*/
 		$model = ActiveRecordModelConfig::getModelConfig($pClassName);
 		
-		$mode = !empty($pOptions) && is_array($pOptions[0])===false?array_shift($pOptions):self::findAll;
+		$mode = !empty($pOptions) && isset($pOptions[0]) && is_array($pOptions[0])===false?array_shift($pOptions):self::findAll;
 		
 		$node = new ActiveRecordSelectNode($model,new ActiveRecordFindConfig(!empty($pOptions)?$pOptions[0]:array()));
 		$select = strcasecmp($mode,self::findCount)==0?new ActiveRecordCountStatement($node,$pOptions):new ActiveRecordSelectStatement($node,$pOptions);
@@ -698,21 +698,6 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 		$records = $collectionAgent->getRecords();
 		
 		return strcmp($mode,self::findOne)==0?count($records)!=0?$records[0]:null:$records;
-		
-	}
-	
-	/*
-	* DPRECATED: use findDynamic instead 
-	*/
-	public static function findByQuery() {
-		
-		$args = func_get_args();
-		
-		$model = array_shift($args);
-		
-		echo '<pre>',print_r($args),'</pre>';
-		
-		//self::_find($model,$args);
 		
 	}
 	
@@ -920,9 +905,36 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 	}
 	
 	/*
-	* Auto connect to database using configuration file information 
+	* Central method all queries run throuh. This may be used for 
+	* logging or debugging purposes. 
+	* 
+	* @param obj ActiveRecordQuery
+	* @param obj PDO adapter
+	* @param str type of query (based on active record query contstants)
+	* 
+	* - ActiveRecordQuery::SELECT (select data)
+	* - ActiveRecordQuery::DELETE (delete data)
+	* - ActiveRecordQuery::UPDATE (update data)
+	* - ActiveRecordQuery::INSERT (insert data)
+	* 
+	* NOTE: Use combination of ActiveRecordQuery::UPDATE && ActiveRecordQuery::INSERT for save.
+	* Save is either an insert or update depending on whether the record exists yet.
+	* 
+	* 
+	* @param obj reference to calling object
 	*/
-	private static function _makeConnection() {
+	public static function query(ActiveRecordQuery $query,PDO $db,$type,$caller=null) {
+		
+		switch($type) {
+			case ActiveRecordQuery::SELECT:
+			case ActiveRecordQuery::DELETE:
+			case ActiveRecordQuery::UPDATE:
+			case ActiveRecordQuery::INSERT:
+			default:
+				$query->showQuery(); // - display query
+				//exit;
+				return $query->query($db);
+		}
 		
 	}
 
