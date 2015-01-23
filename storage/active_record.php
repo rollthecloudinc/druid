@@ -931,13 +931,59 @@ abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,Activ
 			case ActiveRecordQuery::UPDATE:
 			case ActiveRecordQuery::INSERT:
 			default:
-				$query->showQuery(); // - display query
+				//$query->showQuery(); // - display query
 				//exit;
 				return $query->query($db);
 		}
 		
 	}
 
-	abstract public static function find();
+	//abstract public static function find();
+
+  /**
+   * Standard finder method.
+   */
+  public static function find() {
+    $args = func_get_args();
+    return self::_find(get_called_class(),$args);
+  }
+
+  /**
+   * Get count of items in collection.
+   */
+  public static function count() {
+    $args = func_get_args();
+    array_unshift($args,self::findCount);
+    return self::_find(get_called_class(),$args);
+  }
+
+  /**
+   * Get first record in collection.
+   */
+  public static function one() {
+    $args = func_get_args();
+    array_unshift($args,self::findOne);
+    return self::_find(get_called_class(),$args);
+  }
+
+  /**
+   * Short-cut for find... I think
+   */
+  public static function all() {
+    $args = func_get_args();
+    array_unshift($args,self::findAll);
+    return self::_find(get_called_class(),$args);
+  }
+
+  /**
+   * Advanced: Get select statement for creating complex
+   * queries queries w/ nested subqueries.
+   */
+  public static function select() {
+    $args = func_get_args();
+    array_unshift($args,self::findSelect);
+    return self::_find(get_called_class(),$args);
+  }
+
 }
 ?>

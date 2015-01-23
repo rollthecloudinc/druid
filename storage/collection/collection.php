@@ -186,8 +186,9 @@ class ActiveRecordCollection implements arrayaccess,IteratorAggregate,Countable,
 				$loop->first = $loop->index == 0;
 				$loop->last = $loop->index == $loop->total;
 				$loop->odd = !$loop->odd; 
-				
-				call_user_func_array($func,array($row,$loop));
+
+        $contextualClosure = $func->bindTo($row);
+				call_user_func_array($contextualClosure,array($loop));
 				
 				$loop->index++;
 			}

@@ -62,6 +62,12 @@ class ActiveRecordGenerate {
 			$defaultValues = array();
 			$foreignKeys = array();
 			$belongsTo = array();
+      $trueForeignKeys = array();
+
+      // Automated discovery or foreign keys based on reading create table statement.
+      if($this->foreignKeys===true) {
+        $trueForeignKeys = $this->_discoverSchemaForeignKeys($config->getTable());
+      }
 
 			foreach($this->db->query('describe '.$config->getTable().';') as $model) {
 		
@@ -70,13 +76,30 @@ class ActiveRecordGenerate {
 				if(!empty($model['Default'])) $defaultValues[$model['Field']] = $model['Default'];	
 				$fields[] = $model['Field'];
 				$dataTypes[$model['Field']] = $model['Type'];
-				
-				if($this->foreignKeys===true && preg_match('/^.*?_'.IActiveRecordModelConfig::defaultPrimaryKeyName.'$/',$model['Field'])) {
+
+        // Check whether current field is a foreign key field.
+        if(array_key_exists($model['Field'],$trueForeignKeys)) {
+
+          // Relation table name raw
+          $m = $trueForeignKeys[$model['Field']][0];
+
+          // Convert relation table to name to local model name.
+          $className = Inflector::classify($m);
+
+          // Create concrete mapping.
+          $foreignKeys[$model['Field']] = array($className,$trueForeignKeys[$model['Field']][1]);
+
+          // Set belongs to.
+          $belongsTo[] = $m;
+        }
+
+        //  @todo: I really don't link this when comparing to the new method :/
+				/*if($this->foreignKeys===true && preg_match('/^.*?_'.IActiveRecordModelConfig::defaultPrimaryKeyName.'$/',$model['Field'])) {
 					$m = substr($model['Field'],0,-3);
 					$className = Inflector::classify($m);
 					$foreignKeys[$model['Field']] = array($className);
 					$belongsTo[] = $m;
-				}
+				}*/
 	
 			}
 	
@@ -90,6 +113,62 @@ class ActiveRecordGenerate {
 		}	
 	
 	}
+
+  /**
+   * Automated discover of foreign keys in table using a single
+   * algorithm. This is useful for innodb tables or any engine
+   * that supports true foreign key columns. Otherwise, proper
+   * naming is requiring or manually added them after generating
+   * the active record files.
+   *
+   * @param str $table
+   *   The table to discover foreign keys in.
+   *
+   * @return arr
+   *   Array of discovered foreign key mappings.
+   */
+  protected function _discoverSchemaForeignKeys($table) {
+
+    // Pattern that will be used to match foreign keys.
+    $pattern = '/CONSTRAINT\s`.*?`\sFOREIGN KEY\s\(`([a-zA-Z1-9_]*?)`\)\sREFERENCES\s`([a-zA-Z1-9_]*?)`\s\(`([a-zA-Z1-9_]*?)`\)/i';
+
+    // Foreign key matches.
+    $matches = array();
+
+    // The return array of discovered foreign keys.
+    $foreignKeys = array();
+
+    // Use create table statement to derive foreign keys.
+    $result = $this->db->query(sprintf('show create table %s;',$table));
+
+    // Get data row.
+    $row = $result->fetch(PDO::FETCH_ASSOC);
+
+    if(isset($row['Create Table'])) {
+
+      // Match columns.
+      preg_match_all($pattern, $row['Create Table'], $matches);
+
+      // Remove the first item (full strings)
+      array_shift($matches);
+
+      if ($matches) {
+
+        // NUmber of foreign keys found.
+        $count = count($matches[0]);
+
+        // Collect them.
+        for ($i = 0; $i < $count; $i++) {
+          $foreignKeys[$matches[0][$i]] = array($matches[1][$i], $matches[2][$i]);
+        }
+
+      }
+
+    }
+
+    return $foreignKeys;
+
+  }
 	
 	protected function _resolveBasicHasRelationships() {
 
@@ -169,8 +248,10 @@ class ActiveRecordGenerate {
 	
 	protected function _makeClassFile(IActiveRecordModelConfig $config) {
 		
-		$str = 'require_once(\'base/base_'.Inflector::underscore($config->getClassName()).'.php\');'."\n";
-		$str.= 'class '.$config->getClassName().' extends Base'.$config->getClassName().' { '."\n\n";
+		//$str = 'require_once(\'base/base_'.Inflector::underscore($config->getClassName()).'.php\');'."\n";
+		//$str.= 'class '.$config->getClassName().' extends Base'.$config->getClassName().' { '."\n\n";
+
+    $str = 'class '.$config->getClassName().' extends ActiveRecord { '."\n\n";
 	
 		if($this->table === true && $config->hasTable()===true) $str.= "\t".'public static $'.IActiveRecordModelConfig::table.' = \''.trim($config->getTable()).'\';'."\n\n"; 
 		
@@ -304,20 +385,20 @@ class ActiveRecordGenerate {
 	public function write($target) {
 	
 		$this->_prepDirectory($target);
-		$this->_makeBaseDirectory($target);
+		//$this->_makeBaseDirectory($target);
 	
 		foreach($this->configs as $config) {
 			
-			$stub = '<?php'."\n".$this->_makeBaseFile($config)."\n".'?>';
+			/*$stub = '<?php'."\n".$this->_makeBaseFile($config)."\n".'?>';*/
 			$contents = '<?php'."\n".$this->_makeClassFile($config)."\n".'?>';
 			
-			$base = $target.'/base/base_'.Inflector::underscore($config->getClassName()).'.php';
+			//$base = $target.'/base/base_'.Inflector::underscore($config->getClassName()).'.php';
 			$model = $target.'/'.Inflector::underscore($config->getClassName()).'.php';
 			
-			file_put_contents($base,$stub);
+			//file_put_contents($base,$stub);
 			file_put_contents($model,$contents);
 			
-			@chmod($base,0777);
+			//@chmod($base,0777);
 			@chmod($model,0777);
 	
 		}
