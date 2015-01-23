@@ -34,6 +34,7 @@ class ActiveRecordGenerate {
 		$this->enableFields();
 		$this->enableRequiredFields();
 		$this->enableForeignKeys();
+    $this->enableDataTypes();
 	
 	}
 	
@@ -43,7 +44,7 @@ class ActiveRecordGenerate {
 			
 			if(!is_null($tables) && is_array($tables) && !in_array($table[0],$tables)) continue;
 	
-			$config = new ActiveRecordModelConfig(); 	
+			$config = new ActiveRecordModelConfig();
 			$config->setTable($table[0]);
 			$config->setClassName(Inflector::classify($table[0]));
 			$this->configs[] = $config;
@@ -75,7 +76,11 @@ class ActiveRecordGenerate {
 				if(strcasecmp($model['Null'],'NO')==0 && is_null($model['Default']) && strcasecmp($model['Extra'],'auto_increment')!=0) $requiredFields[] = $model['Field'];		
 				if(!empty($model['Default'])) $defaultValues[$model['Field']] = $model['Default'];	
 				$fields[] = $model['Field'];
-				$dataTypes[$model['Field']] = $model['Type'];
+
+        // @todo: Ignore enums for now because they cause invalid PHP in model files currently.
+        if(stripos($model['Type'],'enum(') !== 0) {
+          $dataTypes[$model['Field']] = $model['Type'];
+        }
 
         // Check whether current field is a foreign key field.
         if(array_key_exists($model['Field'],$trueForeignKeys)) {

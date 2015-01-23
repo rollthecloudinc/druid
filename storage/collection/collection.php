@@ -155,6 +155,19 @@ class ActiveRecordCollection implements arrayaccess,IteratorAggregate,Countable,
 		}
 	
 	}
+
+  /**
+   * Shortcut for loop function using standard terminology.
+   *
+   * @param Callable $func
+   *   Function to call on each iteration of the loop.
+   *
+   * @param Callable $func
+   *   Function to call as an alternative when the loop is empty.
+   */
+  public function each($func,$else=null) {
+    $this->loop($func,$else);
+  }
 	
 	/*
 	* Iterates over collection calling a function for each row. Maybe

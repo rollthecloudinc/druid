@@ -134,7 +134,12 @@ class Inflector {
     }
 
     public static function camelize($lower_case_and_underscored_word) {
-        return preg_replace('/(^|_)(.)/e', "strtoupper('\\2')", strval($lower_case_and_underscored_word));
+
+        $func = function($matches) {
+          return strtoupper($matches[2]);
+        };
+
+        return preg_replace_callback('/(^|_)(.)/', $func /*"strtoupper('\\2')"*/ , strval($lower_case_and_underscored_word));
     }
   
     public static function underscore($camel_cased_word) {

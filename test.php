@@ -23,11 +23,27 @@ include 'main.php';
 // @todo: autoloader and PSR-4 for EVERYTHING!!!
 include 'model/bed_catalog_product_entity.php';
 
-$record = BedCatalogProductEntity::one([':id'=>1704,'include'=> ['bed_catalog_product_entity_varchars'] ], [ 'include'=> ['bed_eav_attribute'] ]);
+//$products = BedCatalogProductEntity::all(['include'=> ['bed_catalog_product_entity_varchars','bed_catalog_product_super_link'] ], [ 'include'=> ['bed_eav_attribute'], 'rename'=> 'varchars' ], [ 'rename'=> 'attribute' ]);
 
-$record->bed_catalog_product_entity_varchars->loop(function() {
-  if($this->bed_eav_attribute->attribute_code == 'name') {
-    echo $this->value . PHP_EOL;
-  }
+$products = BedCatalogProductEntity::all(
+  ['limit'=> 30, 'include'=> 'bed_catalog_product_super_link' ],
+  [ 'sort'=> ['product_id'=>'DESC'] ]
+);
+
+$products->each(function() {
+  $this->bed_catalog_product_entity_varchars->each(function() {
+    if($this->bed_eav_attribute->attribute_code == 'name') {
+      echo $this->value.PHP_EOL;
+    }
+  });
 });
+
+
+/*$record->bed_catalog_product_entity_varchars->loop(function() {
+  if($this->bed_eav_attribute->attribute_code == 'name') {
+    echo $this->value;
+  }
+});*/
+
+//$record->save(false);
 
