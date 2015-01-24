@@ -2,29 +2,44 @@
 namespace Druid\Storage;
 
 use Druid\Interfaces\DataEntity as IActiveRecordDataEntity;
-use Druid\Interfaces\Savable as ActiveRecordSavable;
-use Druid\Interfaces\Destroyable as ActiveRecordDestroyable;
+use Druid\Interfaces\Savable as IActiveRecordSavable;
+use Druid\Interfaces\Destroyable as IActiveRecordDestroyable;
 use Druid\Interfaces\Xml as IActiveRecordXML;
 use Druid\Interfaces\Dumpable as IActiveRecordDumpable;
+use Druid\Interfaces\Validation as IActiveRecordValidation;
+use Druid\Interfaces\FindConfig as IActiveRecordFindConfig;
+use Druid\Storage\Entity\DataEntity as ActiveRecordDataEntity;
+use Druid\Core\Connection\Connection as ActiveRecordConnection;
+use Druid\Core\Inflector\Inflector as Inflector;
+use Druid\Select\SelectNode as ActiveRecordSelectNode;
+use Druid\Select\CountStatement as ActiveRecordCountStatement;
+use Druid\Select\CollectionAgent as ActiveRecordCollectionAgent;
+use Druid\Save\Save as ActiveRecordSave;
+use Druid\Cascade\Cascade as ActiveRecordCascade;
+use Druid\Cascade\CascadeNode as ActiveRecordCascadeNode;
+use Druid\Cascade\Action\Destroy as ActiveRecordDestroy;
+use Druid\Cascade\Action\Deactivate as ActiveRecordDeactivate;
+use Druid\Core\Query\Query as ActiveRecordQuery;
+use Druid\Storage\Dom\DomElement as ActiveRecordDOMElement;
+use Druid\Core\Model\ModelConfig as ActiveRecordModelConfig;
+use Druid\Select\Find\FindConfig as ActiveRecordFindConfig;
 
-use Druid\Storage\Entity\ActiveRecordDataEntity
+//$d = str_replace('//','/',dirname(__FILE__).'/');
+//require_once($d.'entity/data_entity.php');
+//require_once($d.'collection/collection.php');
+//require_once($d.'../core/connection/connection.php');
+//require_once($d.'../core/inflector/inflector.php');
+//require_once($d.'../select/select_node.php');
+//require_once($d.'../select/count_statement.php');
+//require_once($d.'../select/collection_agent.php');
+//require_once($d.'../save/save.php');
+//require_once($d.'../cascade/cascade.php');
+//require_once($d.'../cascade/cascade_node.php');
+//require_once($d.'../cascade/action/destroy.php');
+//require_once($d.'../cascade/action/deactivate.php');
+//require_once($d.'../core/validation/validation.php');
 
-/*$d = str_replace('//','/',dirname(__FILE__).'/');
-require_once($d.'entity/data_entity.php');
-require_once($d.'collection/collection.php');
-require_once($d.'../core/connection/connection.php');
-require_once($d.'../core/inflector/inflector.php');
-require_once($d.'../select/select_node.php');
-require_once($d.'../select/count_statement.php');
-require_once($d.'../select/collection_agent.php');
-require_once($d.'../save/save.php');
-require_once($d.'../cascade/cascade.php');
-require_once($d.'../cascade/cascade_node.php');
-require_once($d.'../cascade/action/destroy.php');
-require_once($d.'../cascade/action/deactivate.php');
-require_once($d.'../core/validation/validation.php');*/
-
-/*abstract*/ class ActiveRecord implements IActiveRecordDataEntity ,arrayaccess,IActiveRecordSavable, IActiveRecordDestroyable ,IActiveRecordXML,IActiveRecordDumpable {
+/*abstract*/ class ActiveRecord implements IActiveRecordDataEntity ,\arrayaccess,IActiveRecordSavable, IActiveRecordDestroyable ,IActiveRecordXML,IActiveRecordDumpable {
 
   const
 
@@ -262,7 +277,7 @@ require_once($d.'../core/validation/validation.php');*/
     $model = ActiveRecordModelConfig::getModelConfig($className);
 
     if($model->hasPrimaryKey()===false) {
-      throw new Exception('A model must have a primary key static property specified as a string to be initialized as a ActiveRecord. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
+      throw new \Exception('A model must have a primary key static property specified as a string to be initialized as a ActiveRecord. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
     }
 
     $primaryKeyField = $model->getPrimaryKey();
@@ -271,7 +286,7 @@ require_once($d.'../core/validation/validation.php');*/
 
     if(is_null($record)===true) {
 
-      throw new Exception('A '.$model->getClassName().' with a primary key of '.$pArgs[0].' could not be located. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
+      throw new \Exception('A '.$model->getClassName().' with a primary key of '.$pArgs[0].' could not be located. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
 
     } else {
 
@@ -454,7 +469,7 @@ require_once($d.'../core/validation/validation.php');*/
           }
         }
 
-        throw new Exception('Relationship between '.get_class($this).' and '.$relatedClassName.' could not be resolved. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__.' for '.$pName.'()');
+        throw new \Exception('Relationship between '.get_class($this).' and '.$relatedClassName.' could not be resolved. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__.' for '.$pName.'()');
 
       }
 
@@ -500,7 +515,7 @@ require_once($d.'../core/validation/validation.php');*/
           }
         }
 
-        throw new Exception('Relationship between '.get_class($this).' and '.$relatedClassName.' could not be resolved. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__.' for '.$pName.'()');
+        throw new \Exception('Relationship between '.get_class($this).' and '.$relatedClassName.' could not be resolved. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__.' for '.$pName.'()');
 
       }
 
@@ -519,7 +534,7 @@ require_once($d.'../core/validation/validation.php');*/
 
       if(empty($pArgs)===true) {
 
-        throw new Exception('The dynamic '.self::addRelatedPrefix.' method for instance of class '.$modelConfig->getClassName().' requires at least one argument. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
+        throw new \Exception('The dynamic '.self::addRelatedPrefix.' method for instance of class '.$modelConfig->getClassName().' requires at least one argument. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
 
       }
 
@@ -546,7 +561,7 @@ require_once($d.'../core/validation/validation.php');*/
 
         if($manyToMany===false) {
 
-          throw new Exception('Relationship between '.get_class($this).' and '.$relatedClassName.' could not be resolved. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__.' for '.$pName.'()');
+          throw new \Exception('Relationship between '.get_class($this).' and '.$relatedClassName.' could not be resolved. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__.' for '.$pName.'()');
 
         }
 
@@ -566,7 +581,7 @@ require_once($d.'../core/validation/validation.php');*/
 
       if(!empty($invalid)) {
 
-        throw new Exception('Dynamic method '.$pName.' only accepts objects of type '.$relatedClassName.' as arguments. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__.'.');
+        throw new \Exception('Dynamic method '.$pName.' only accepts objects of type '.$relatedClassName.' as arguments. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__.'.');
 
       }
 
@@ -603,7 +618,7 @@ require_once($d.'../core/validation/validation.php');*/
       $this->setProperty($pPropertyName,$record);
       return $this->getProperty($pPropertyName);
 
-    } catch(Exception $e) {
+    } catch(\Exception $e) {
 
       return null;
 
@@ -623,9 +638,9 @@ require_once($d.'../core/validation/validation.php');*/
       $cascade = new ActiveRecordCascade($delete);
       $cascade->cascade($node);
 
-    } catch(Exception $e) {
+    } catch(\Exception $e) {
 
-      throw new Exception('Error initializing delete. Exception caught and rethrown from line '.__LINE__.' in class '.__CLASS__.' inside method '.__METHOD__.': '.$e->getMessage());
+      throw new \Exception('Error initializing delete. Exception caught and rethrown from line '.__LINE__.' in class '.__CLASS__.' inside method '.__METHOD__.': '.$e->getMessage());
       return false;
 
     }
@@ -645,9 +660,9 @@ require_once($d.'../core/validation/validation.php');*/
 
       }
 
-    } catch(Exception $e) {
+    } catch(\Exception $e) {
 
-      throw new Exception('Error executing delete queries. Exception caught and rethrown from line '.__LINE__.' in class '.__CLASS__.' inside method '.__METHOD__.': '.$e->getMessage());
+      throw new \Exception('Error executing delete queries. Exception caught and rethrown from line '.__LINE__.' in class '.__CLASS__.' inside method '.__METHOD__.': '.$e->getMessage());
       return false;
 
     }
@@ -669,7 +684,7 @@ require_once($d.'../core/validation/validation.php');*/
   protected static function _find($pClassName,$pOptions) {
 
     if(self::getConnection() === null) {
-      throw new Exception('A database connection could not be established');
+      throw new \Exception('A database connection could not be established');
     }
 
     // load model files
@@ -702,7 +717,7 @@ require_once($d.'../core/validation/validation.php');*/
 
     if(strcmp($mode,self::findCount)==0) { return $stmt->fetchColumn(); }
 
-    while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    while($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
       $collectionAgent->process($row,$node);
     }
 
@@ -900,7 +915,7 @@ require_once($d.'../core/validation/validation.php');*/
     // check that directory exists
     if(!is_dir($strModelsDirectory)) {
       self::$_boolLoadedModels = false;
-      throw new Exception("Directory $strModelsDirectory not found when attempting to load models.");
+      throw new \Exception("Directory $strModelsDirectory not found when attempting to load models.");
       return false;
     }
 
@@ -934,7 +949,7 @@ require_once($d.'../core/validation/validation.php');*/
   *
   * @param obj reference to calling object
   */
-  public static function query(ActiveRecordQuery $query,PDO $db,$type,$caller=null) {
+  public static function query(ActiveRecordQuery $query,\PDO $db,$type,$caller=null) {
 
     switch($type) {
       case ActiveRecordQuery::SELECT:

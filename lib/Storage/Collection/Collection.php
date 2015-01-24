@@ -8,8 +8,14 @@ use Druid\Interfaces\Destroyable as ActiveRecordDestroyable;
 use Druid\Interfaces\Xml as IActiveRecordXML;
 use Druid\Interfaces\Dumpable as ActiveRecordDumpable;
 use Druid\Interfaces\DataEntity as IActiveRecordDataEntity;
-
+use Druid\Cascade\Cascade as ActiveRecordCascade;
+use Druid\Cascade\CascadeNode as ActiveRecordCascadeNode;
+use Druid\Cascade\Action\Destroy as ActiveRecordDestroy;
+use Druid\Cascade\Action\Deactivate as ActiveRecordDeactivate;
 use Druid\Storage\ActiveRecord as ActiveRecord;
+use Druid\Core\Model\ModelConfig as ActiveRecordModelConfig;
+use Druid\Save\Save as ActiveRecordSave;
+use Druid\Storage\Dom\DomElement as ActiveRecordDOMElement;
 
 /*require_once('collection_iterator.php');
 require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../interface/savable.php');
@@ -18,7 +24,7 @@ require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../interface/xml.
 require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../interface/dumpable.php');
 require_once( str_replace('//','/',dirname(__FILE__).'/') .'../dom/dom_element.php');*/
 
-class Collection implements arrayaccess,IteratorAggregate,Countable,ActiveRecordSavable,ActiveRecordDestroyable,IActiveRecordXML,ActiveRecordDumpable  {
+class Collection implements \arrayaccess,\IteratorAggregate,\Countable,ActiveRecordSavable,ActiveRecordDestroyable,IActiveRecordXML,ActiveRecordDumpable  {
 
   protected $container;
 
@@ -107,9 +113,9 @@ class Collection implements arrayaccess,IteratorAggregate,Countable,ActiveRecord
       $cascade = new ActiveRecordCascade($delete);
       $cascade->cascade($node);
 
-    } catch(Exception $e) {
+    } catch(\Exception $e) {
 
-      throw new Exception('Error initializing delete. Exception caught and rethrown from line '.__LINE__.' in class '.__CLASS__.' inside method '.__METHOD__.': '.$e->getMessage());
+      throw new \Exception('Error initializing delete. Exception caught and rethrown from line '.__LINE__.' in class '.__CLASS__.' inside method '.__METHOD__.': '.$e->getMessage());
       return false;
 
     }
@@ -129,9 +135,9 @@ class Collection implements arrayaccess,IteratorAggregate,Countable,ActiveRecord
 
       }
 
-    } catch(Exception $e) {
+    } catch(\Exception $e) {
 
-      throw new Exception('Error executing delete queries. Exception caught and rethrown from line '.__LINE__.' in class '.__CLASS__.' inside method '.__METHOD__.': '.$e->getMessage());
+      throw new \Exception('Error executing delete queries. Exception caught and rethrown from line '.__LINE__.' in class '.__CLASS__.' inside method '.__METHOD__.': '.$e->getMessage());
       return false;
 
     }
@@ -201,7 +207,7 @@ class Collection implements arrayaccess,IteratorAggregate,Countable,ActiveRecord
       * - odd (odd item?)
       * - index (current index)
       */
-      $loop = new StdClass();
+      $loop = new \StdClass();
       $loop->total = count($this)-1;
       $loop->index = 0;
       $loop->odd = false;

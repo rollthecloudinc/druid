@@ -2,7 +2,7 @@
 
 namespace Druid\Storage\Collection;
 
-class CollectionIterator implements Iterator {
+class CollectionIterator implements \Iterator {
 
   protected $records;
   protected $cursor;

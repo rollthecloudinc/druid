@@ -4,10 +4,11 @@ namespace Druid\Storage\Entity;
 
 use Druid\Interfaces\DataEntity as IActiveRecordDataEntity;
 use Druid\Storage\Collection\Collection as ActiveRecordCollection;
+use Druid\Storage\Entity\DataEntityIterator as ActiveRecordDataEntityIterator;
 
 /*require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../interface/data_entity.php');
 require_once( str_replace('//','/',dirname(__FILE__).'/') .'../collection/collection.php');*/
-require_once('data_entity_iterator.php');
+//require_once('data_entity_iterator.php');
 
 class DataEntity implements IActiveRecordDataEntity {
 
