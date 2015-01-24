@@ -6,7 +6,11 @@
 * [optional] -m [table_one,table_two,table_three]
 */
 
-require_once(str_replace('//','/',dirname(__FILE__).'/') .'../rake/rake.php');
+// @todo: use Symfony console component for this.
+
+//require_once(str_replace('//','/',dirname(__FILE__).'/') .'../rake/rake.php');
+
+require 'vendor/autoload.php';
 
 $args = array();
 
@@ -39,7 +43,7 @@ if(!is_dir($target)) {
 try {
 
 	$db = new PDO("mysql:dbname=$name;host=$host",$user,$pwd);
-	new ActiveRecordRake($db,$target,$tables);
+	new Druid\Rake\Rake($db,$target,$tables);
 	echo "\n".'Script executed sucessfully'."\n";
 
 } catch(PDOException $e) {
