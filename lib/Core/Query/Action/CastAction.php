@@ -5,7 +5,7 @@ namespace Druid\Core\Query\Action;
 use Druid\Interfaces\QueryAction as IActiveRecordQueryAction;
 
 //require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../../interface/query_action.php');
-class ActiveRecordCastAction implements IActiveRecordQueryAction {
+class CastAction implements IActiveRecordQueryAction {
 
 	protected $records;
 

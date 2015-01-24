@@ -2,10 +2,19 @@
 
 namespace Druid\Save;
 
-require_once('insert/insert.php');
-require_once('update/update.php');
-require_once( str_replace('//','/',dirname(__FILE__).'/') .'../core/query/action/set_primary_key_action.php');
-require_once( str_replace('//','/',dirname(__FILE__).'/') .'../core/query/action/cast_action.php');
+use Druid\Save\Insert\Insert as ActiveRecordInsert;
+use Druid\Save\Update\Update as ActiveRecordUpdate;
+use Druid\Core\Inflector\Inflector as Inflector;
+use Druid\Core\Query\Query as ActiveRecordQuery;
+use Druid\Core\Query\Action\SetPrimaryKeyAction as ActiveRecordSetPrimaryKeyAction;
+use Druid\Core\Query\Action\CastAction as ActiveRecordCastAction;
+use Druid\Core\Model\ModelConfig as ActiveRecordModelConfig;
+use Druid\Storage\ActiveRecord as ActiveRecord;
+
+//require_once('insert/insert.php');
+//require_once('update/update.php');
+//require_once( str_replace('//','/',dirname(__FILE__).'/') .'../core/query/action/set_primary_key_action.php');
+//require_once( str_replace('//','/',dirname(__FILE__).'/') .'../core/query/action/cast_action.php');
 class Save {
 
   protected $insert;
@@ -71,7 +80,7 @@ class Save {
 
   }
 
-  public function query(PDO $db) {
+  public function query(\PDO $db) {
 
     if(!empty($this->records)) {
 
@@ -88,7 +97,7 @@ class Save {
 
     } else {
 
-      throw new Exception('Nothing to save. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' inside method '.__METHOD__);
+      throw new \Exception('Nothing to save. Exception thrown in class '.__CLASS__.' on line '.__LINE__.' inside method '.__METHOD__);
       return false;
 
     }
@@ -96,7 +105,7 @@ class Save {
 
   }
 
-  protected function updateQuery(PDO $db) {
+  protected function updateQuery(\PDO $db) {
 
 
     foreach($this->updateQueries as $query) {
@@ -105,9 +114,9 @@ class Save {
 
         ActiveRecord::query($query,$db,ActiveRecordQuery::UPDATE,$this);
 
-      } catch(Exception $e) {
+      } catch(\Exception $e) {
 
-        throw new Exception('Unable to execute SQL query in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
+        throw new \Exception('Unable to execute SQL query in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
         return false;
 
       }
@@ -119,7 +128,7 @@ class Save {
   }
 
 
-  protected function insertQuery(PDO $db) {
+  protected function insertQuery(\PDO $db) {
 
 
     foreach($this->insertQueries as $query) {
@@ -128,9 +137,9 @@ class Save {
 
         ActiveRecord::query($query,$db,ActiveRecordQuery::INSERT,$this);
 
-      } catch(Exception $e) {
+      } catch(\Exception $e) {
 
-        throw new Exception('Unable to execute SQL query in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
+        throw new \Exception('Unable to execute SQL query in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
         return false;
 
       }
@@ -158,9 +167,9 @@ class Save {
       }
 
 
-    } catch(Exception $e) {
+    } catch(\Exception $e) {
 
-      throw new Exception('Unable to execute SQL query in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
+      throw new \Exception('Unable to execute SQL query in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
       return false;
 
     }
@@ -270,7 +279,7 @@ class Save {
 
           // insert any dependencies that have not been saved (lacking primary key)
           if($ar->hasProperty($model) && !is_null($ar->getProperty($model)) && $ar->getProperty($model)->hasProperty($relatedClassConfig->getPrimaryKey())===false) {
-            $save = new ActiveRecordSave($ar->getProperty($model));
+            $save = new Save($ar->getProperty($model));
             $save->query($this->db);
           }
 

@@ -2,7 +2,10 @@
 
 namespace Druid\Core\Model;
 
+use Druid\Core\Inflector\Inflector as Inflector;
+use Druid\Core\Model\DynamicModel as ActiveRecordDynamicModel;
 use Druid\Interfaces\ModelConfig as IActiveRecordModelConfig;
+use Druid\Select\SelectStatement as ActiveRecordSelectStatement;
 
 //require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../interface/model_config.php');
 
@@ -529,7 +532,7 @@ class ModelConfig implements IActiveRecordModelConfig {
       return new ActiveRecordDynamicModel($pClassName);
     }
 
-    return array_key_exists($pClassName,self::$_configured)===true?self::$_configured[$pClassName]:new ActiveRecordModelConfig($pClassName);
+    return array_key_exists($pClassName,self::$_configured)===true?self::$_configured[$pClassName]:new ModelConfig($pClassName);
 
   }
 

@@ -8,7 +8,7 @@ use Druid\Storage\ActiveRecord as ActiveRecord;
 
 //require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../../interface/query_action.php');
 //require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../model/model_config.php');
-class ActiveRecordSetPrimaryKeyAction implements IActiveRecordQueryAction {
+class SetPrimaryKeyAction implements IActiveRecordQueryAction {
 
 	protected $record;
 

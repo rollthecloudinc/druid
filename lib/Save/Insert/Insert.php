@@ -2,8 +2,11 @@
 
 namespace Druid\Save\Insert;
 
-require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../core/model/model_config.php');
-class Insert implements Countable {
+use Druid\Core\Model\ModelConfig as ActiveRecordModelConfig;
+use Druid\Storage\ActiveRecord as ActiveRecord;
+
+//require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../core/model/model_config.php');
+class Insert implements \Countable {
 
   const insertTransform = 'save';
 
@@ -28,7 +31,7 @@ class Insert implements Countable {
 
   }
 
-  public function setSibling(ActiveRecordInsert $pSibling) {
+  public function setSibling(Insert $pSibling) {
 
     $this->sibling = $pSibling;
 
@@ -69,7 +72,7 @@ class Insert implements Countable {
 
       } else {
 
-        $this->setSibling(new ActiveRecordInsert($pRecord));
+        $this->setSibling(new Insert($pRecord));
 
       }
 
@@ -349,7 +352,7 @@ class Insert implements Countable {
 
       if(!empty($undeclaredRequiredProperties)) {
 
-        throw new Exception('Fields {'.implode(',',$undeclaredRequiredProperties).'} are required to insert a '.$config->getClassName().'. Exception generated in '.__CLASS__.' on line '.__LINE__);
+        throw new \Exception('Fields {'.implode(',',$undeclaredRequiredProperties).'} are required to insert a '.$config->getClassName().'. Exception generated in '.__CLASS__.' on line '.__LINE__);
         return false;
 
       }

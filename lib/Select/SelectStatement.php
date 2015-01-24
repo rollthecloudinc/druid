@@ -3,6 +3,7 @@
 namespace Druid\Select;
 
 use Druid\Interfaces\FindConfig as IActiveRecordFindConfig;
+use Druid\Core\Inflector\Inflector as Inflector;
 use Druid\Core\Query\Query as ActiveRecordQuery;
 use Druid\Core\Model\ModelConfig as ActiveRecordModelConfig;
 use Druid\Core\Model\DynamicModel as ActiveRecordDynamicModel;
