@@ -1,7 +1,7 @@
 <?php
 namespace Druid\Interfaces;
 
-interface DataEntity extends IteratorAggregate {
+interface DataEntity extends \IteratorAggregate {
 
   public function getProperty($pName);
   public function setProperty($pName,$pValue);

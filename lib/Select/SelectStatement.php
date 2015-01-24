@@ -2,16 +2,30 @@
 
 namespace Druid\Select;
 
-require_once('select_node.php');
-require_once('find/find_config.php');
-require_once('clause/select_clause.php');
-require_once('clause/where_clause.php');
-require_once('clause/sort_clause.php');
-require_once('clause/group_clause.php');
-require_once('clause/having_clause.php');
-require_once('clause/limit_clause.php');
-require_once( str_replace('//','/',dirname(__FILE__).'/') .'../core/query/query.php');
-require_once( str_replace('//','/',dirname(__FILE__).'/') .'../core/model/dynamic_model.php');
+use Druid\Interfaces\FindConfig as IActiveRecordFindConfig;
+use Druid\Core\Query\Query as ActiveRecordQuery;
+use Druid\Core\Model\ModelConfig as ActiveRecordModelConfig;
+use Druid\Core\Model\DynamicModel as ActiveRecordDynamicModel;
+use Druid\Select\SelectNode as ActiveRecordSelectNode;
+use Druid\Select\Find\FindConfig as ActiveRecordFindConfig;
+use Druid\Select\Clause\SelectClause as ActiveRecordSelectClause;
+use Druid\Select\Clause\WhereClause as ActiveRecordWhereClause;
+use Druid\Select\Clause\SortClause as ActiveRecordSortClause;
+use Druid\Select\Clause\GroupClause as ActiveRecordGroupClause;
+use Druid\Select\Clause\HavingClause as ActiveRecordHavingClause;
+use Druid\Select\Clause\LimitClause as ActiveRecordLimitClause;
+use Druid\Storage\ActiveRecord as ActiveRecord;
+
+//require_once('select_node.php');
+//require_once('find/find_config.php');
+//require_once('clause/select_clause.php');
+//require_once('clause/where_clause.php');
+//require_once('clause/sort_clause.php');
+//require_once('clause/group_clause.php');
+//require_once('clause/having_clause.php');
+//require_once('clause/limit_clause.php');
+//require_once( str_replace('//','/',dirname(__FILE__).'/') .'../core/query/query.php');
+//require_once( str_replace('//','/',dirname(__FILE__).'/') .'../core/model/dynamic_model.php');
 class SelectStatement {
 
   protected static $_selectPrimaryKey = true;
@@ -93,9 +107,9 @@ class SelectStatement {
       return ActiveRecord::query($query,$pDb,ActiveRecordQuery::SELECT,$this);
 
 
-    } catch(Exception $e) {
+    } catch(\Exception $e) {
 
-      throw new Exception('Unable to execute SQL query in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
+      throw new \Exception('Unable to execute SQL query in class '.__CLASS__.' on line '.__LINE__.' in method '.__METHOD__);
       return false;
 
     }
@@ -213,7 +227,7 @@ class SelectStatement {
             $includeFindConfig = new ActiveRecordFindConfig(array());
           }
 
-          if($modelInclude instanceof ActiveRecordSelectStatement) {
+          if($modelInclude instanceof SelectStatement) {
 
             $modelInclude->toSql();
             $includeModel = new ActiveRecordDynamicModel($modelInclude);
@@ -232,7 +246,7 @@ class SelectStatement {
 
           $includeNode = new ActiveRecordSelectNode($includeModel,$includeFindConfig);
 
-          if($modelInclude instanceof ActiveRecordSelectStatement) {
+          if($modelInclude instanceof SelectStatement) {
             $this->_selectSubqueryFields($includeNode,$modelInclude);
             $includeNode->addChild($modelInclude->getNode());
           }
@@ -248,7 +262,7 @@ class SelectStatement {
 
   }
 
-  protected function _selectSubqueryFields(ActiveRecordSelectNode $dynamic,ActiveRecordSelectStatement $select) {
+  protected function _selectSubqueryFields(ActiveRecordSelectNode $dynamic,SelectStatement $select) {
 
     $fields = $select->getSelectClause()->getFields();
     $nodes =  $select->getSelectClause()->getNodes();

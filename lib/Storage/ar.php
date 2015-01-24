@@ -25,7 +25,7 @@ require_once($d.'../core/validation/validation.php');*/
 
 
 
-abstract class ActiveRecord implements IActiveRecordDataEntity,arrayaccess,ActiveRecordSavable,ActiveRecordDestroyable,IActiveRecordXML,ActiveRecordDumpable {
+abstract class xActiveRecord implements IActiveRecordDataEntity,arrayaccess,ActiveRecordSavable,ActiveRecordDestroyable,IActiveRecordXML,ActiveRecordDumpable {
 
   const
 
