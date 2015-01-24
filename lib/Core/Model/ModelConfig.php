@@ -9,6 +9,10 @@ use Druid\Select\SelectStatement as ActiveRecordSelectStatement;
 
 //require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../interface/model_config.php');
 
+use Druid\Model\BedCatalogProductSuperLink as BedCatalogProductSuperLink;
+use Druid\Model\BedCatalogProductEntityVarchar;
+use Druid\Model\BedEavAttribute;
+
 /*
 * Class is a storage facility for all configuration information about a model.
 */
@@ -43,11 +47,15 @@ class ModelConfig implements IActiveRecordModelConfig {
     if(!is_null($pClassName)) {
 
       if(class_exists($pClassName)===true) {
-        $this->setClassName($pClassName);
+
+        //$reflect = new \ReflectionClass($pClassName);
+
+        $this->setClassName( $pClassName /*$reflect->getShortName()*/ );
         $this->_init();
       } else {
-        throw new Exception('Model '.$pClassName.' not found. Exception thrown in class '.__CLASS__.' on line '.__LINE__);
+        throw new \Exception('Model ' . $pClassName . ' not found. Exception thrown in class ' . __CLASS__ . ' on line ' . __LINE__);
       }
+
 
       if(!array_key_exists($pClassName,self::$_configured)) {
 
@@ -60,6 +68,8 @@ class ModelConfig implements IActiveRecordModelConfig {
   }
 
   protected function _init() {
+
+    //echo $this->getClassName().PHP_EOL;
 
     $classAttr = get_class_vars($this->getClassName());
 

@@ -89,7 +89,7 @@ class Query {
 	protected function bind(\PDOStatement $stmt) {
 	
 		$bindCount = count($this->data);
-		for($i=0;$i<$bindCount;$i++) $stmt->bindValue(($i+1),$this->data[$i],is_string($this->data[$i])?PDO::PARAM_STR:PDO::PARAM_INT);			
+		for($i=0;$i<$bindCount;$i++) $stmt->bindValue(($i+1),$this->data[$i],is_string($this->data[$i])?\PDO::PARAM_STR:\PDO::PARAM_INT);
 	
 	}
 	

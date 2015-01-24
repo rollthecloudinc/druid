@@ -263,8 +263,8 @@ class Generate {
 		//$str = 'require_once(\'base/base_'.Inflector::underscore($config->getClassName()).'.php\');'."\n";
 		//$str.= 'class '.$config->getClassName().' extends Base'.$config->getClassName().' { '."\n\n";
 
-    $str = 'namespace Druid\Model;'.PHP_EOL;
-    $str.= 'use Druid\Storage\ActiveRecord as ActiveRecord'.PHP_EOL.PHP_EOL;
+    //$str = 'namespace Druid\Model;'.PHP_EOL;
+    $str = 'use Druid\Storage\ActiveRecord as ActiveRecord;'.PHP_EOL.PHP_EOL;
 
     $str.= 'class '.$config->getClassName().' extends ActiveRecord { '."\n\n";
 	
@@ -408,7 +408,7 @@ class Generate {
 			$contents = '<?php'."\n".$this->_makeClassFile($config)."\n".'?>';
 			
 			//$base = $target.'/base/base_'.Inflector::underscore($config->getClassName()).'.php';
-			$model = $target.'/'.Inflector::underscore($config->getClassName()).'.php';
+			$model = $target.'/'.$config->getClassName().'.php';
 			
 			//file_put_contents($base,$stub);
 			file_put_contents($model,$contents);

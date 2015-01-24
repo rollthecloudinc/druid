@@ -12,6 +12,7 @@ use Druid\Storage\Entity\DataEntity as ActiveRecordDataEntity;
 use Druid\Core\Connection\Connection as ActiveRecordConnection;
 use Druid\Core\Inflector\Inflector as Inflector;
 use Druid\Select\SelectNode as ActiveRecordSelectNode;
+use Druid\Select\SelectStatement as ActiveRecordSelectStatement;
 use Druid\Select\CountStatement as ActiveRecordCountStatement;
 use Druid\Select\CollectionAgent as ActiveRecordCollectionAgent;
 use Druid\Save\Save as ActiveRecordSave;
@@ -39,7 +40,7 @@ use Druid\Select\Find\FindConfig as ActiveRecordFindConfig;
 //require_once($d.'../cascade/action/deactivate.php');
 //require_once($d.'../core/validation/validation.php');
 
-/*abstract*/ class ActiveRecord implements IActiveRecordDataEntity ,\arrayaccess,IActiveRecordSavable, IActiveRecordDestroyable ,IActiveRecordXML,IActiveRecordDumpable {
+abstract class ActiveRecord implements IActiveRecordDataEntity ,\arrayaccess,IActiveRecordSavable, IActiveRecordDestroyable ,IActiveRecordXML,IActiveRecordDumpable {
 
   const
 
@@ -212,6 +213,7 @@ use Druid\Select\Find\FindConfig as ActiveRecordFindConfig;
     }
 
     // auto load model files
+    // No longer necessary with composer
     self::loadModelFiles();
 
     $args = func_get_args();
@@ -878,7 +880,7 @@ use Druid\Select\Find\FindConfig as ActiveRecordFindConfig;
     */
     if(self::$_config === null) {
       // base location is lib root in config.xml
-      self::$_config = str_replace('//','/',dirname(__FILE__).'/').'../config.xml';
+      self::$_config = str_replace('//','/',dirname(__FILE__).'/').'../../config.xml';
     }
 
     return self::$_config;
@@ -910,7 +912,7 @@ use Druid\Select\Find\FindConfig as ActiveRecordFindConfig;
     */
     $objConfig = self::getConfig();
     $strDirectory = (string) ActiveRecord::getConfig()->models->directory;
-    $strModelsDirectory = str_replace('//','/',dirname(__FILE__).'/')."../$strDirectory";
+    $strModelsDirectory = str_replace('//','/',dirname(__FILE__).'/')."../../$strDirectory";
 
     // check that directory exists
     if(!is_dir($strModelsDirectory)) {

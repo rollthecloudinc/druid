@@ -97,7 +97,7 @@ class SelectStatement {
 
   }
 
-  public function query(PDO $pDb) {
+  public function query(\PDO $pDb) {
 
     $sql = $this->toSql();
     $bindData = $this->getBindData();

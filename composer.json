@@ -1,6 +1,6 @@
 {
   "name": "oddz/druid",
   "autoload": {
-    "psr-4": {"Druid\\": "lib/"}
+    "psr-4": {"Druid\\Model\\": "model/","Druid\\": "lib/"}
   }
 }
