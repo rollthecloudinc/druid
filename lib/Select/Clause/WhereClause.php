@@ -295,7 +295,7 @@ class WhereClause {
 			if(array_key_exists($conditionName,$pConditions)) {
 
         // @todo: Where is this class/what is this class??
-				if($pConditions[$conditionName] instanceof ActiveRecordSelect) {
+				if($pConditions[$conditionName] instanceof /*ActiveRecordSelect*/ ActiveRecordSelectStatement) {
 				
 					$pConditionMap = str_replace('{'.$conditionName.'}','('.$pConditions[$conditionName]->toSql().')',$pConditionMap);
 					$this->_filterData = array_merge($this->_filterData,$pConditions[$conditionName]->getBindData());

@@ -9,10 +9,6 @@ use Druid\Select\SelectStatement as ActiveRecordSelectStatement;
 
 //require_once( str_replace('//','/',dirname(__FILE__).'/') .'../../interface/model_config.php');
 
-use Druid\Model\BedCatalogProductSuperLink as BedCatalogProductSuperLink;
-use Druid\Model\BedCatalogProductEntityVarchar;
-use Druid\Model\BedEavAttribute;
-
 /*
 * Class is a storage facility for all configuration information about a model.
 */
