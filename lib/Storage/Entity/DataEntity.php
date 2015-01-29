@@ -54,7 +54,7 @@ class DataEntity implements IActiveRecordDataEntity {
 
     if(!array_key_exists($pPropertyName,$this->_data)) return false;
 
-    if(!($this->_data[$pPropertyName][0] instanceof IActiveRecordDataEntity) && $this->_data[$pPropertyName][0] instanceof arrayaccess) {
+    if(!($this->_data[$pPropertyName][0] instanceof IActiveRecordDataEntity) && $this->_data[$pPropertyName][0] instanceof \arrayaccess) {
 
       foreach($this->_data[$pPropertyName][0] as $record) {
 
@@ -80,7 +80,7 @@ class DataEntity implements IActiveRecordDataEntity {
 
     if(array_key_exists($pPropertyName,$this->_data)===true) {
 
-      if(!($this->_data[$pPropertyName][0] instanceof IActiveRecordDataEntity) && $this->_data[$pPropertyName][0] instanceof arrayaccess) {
+      if(!($this->_data[$pPropertyName][0] instanceof IActiveRecordDataEntity) && $this->_data[$pPropertyName][0] instanceof \arrayaccess) {
 
         $this->_data[$pPropertyName][0][] = $pRecord;
 
