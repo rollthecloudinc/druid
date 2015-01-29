@@ -36,7 +36,7 @@ $target = $args['-t'];
 
 // make sure target directory exists
 if(!is_dir($target)) {
-	echo 'Script can\'t procede because target directory '.$target.' does not exist';
+	echo 'Script can\'t proceed because target directory '.$target.' does not exist';
 	exit;
 }
 
@@ -44,7 +44,7 @@ try {
 
 	$db = new PDO("mysql:dbname=$name;host=$host",$user,$pwd);
 	new Druid\Rake\Rake($db,$target,$tables);
-	echo "\n".'Script executed sucessfully'."\n";
+	echo "\n".'Script executed successfully'."\n";
 
 } catch(PDOException $e) {
 

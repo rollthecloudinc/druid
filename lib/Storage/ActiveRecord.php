@@ -880,7 +880,7 @@ abstract class ActiveRecord implements IActiveRecordDataEntity ,\arrayaccess,IAc
     */
     if(self::$_config === null) {
       // base location is lib root in config.xml
-      self::$_config = str_replace('//','/',dirname(__FILE__).'/').'../../config.xml';
+      self::$_config = str_replace('//','/',dirname(__FILE__).'/').'../../config/druid.xml';
     }
 
     return self::$_config;

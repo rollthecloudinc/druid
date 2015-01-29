@@ -1,5 +1,5 @@
 model/*
-config.xml
+config/druid.xml
 .idea/*
 PhpStorm-*
 vendor/*
