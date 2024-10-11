@@ -6,7 +6,7 @@
     <connection>
         <host>host</host>
         <password>password</password>
-        <user>user</user>
+        <user>username</user>
         <name>db</name>
     </connection>
 </druid>
