@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<druid>
+    <models>
+        <directory>model</directory>
+    </models>
+    <connection>
+        <host>host</host>
+        <password>password</password>
+        <user>username</user>
+        <name>db</name>
+    </connection>
+</druid>

@@ -1,54 +1,39 @@
 <?php
-/*
-* command line script to generate model files
-* requires PHP 5.0: php -v 
-* use: php PATH -h localhost -u username -d dbname -p password -t WRITE_DIR_PATH
-* [optional] -m [table_one,table_two,table_three]
-*/
+/**
+ * Command line script to generate model files from existing db.
+ * version: php 5.4+
+ */
 
-require_once(str_replace('//','/',dirname(__FILE__).'/') .'../rake/rake.php');
+require str_replace('//','/',dirname(__FILE__).'/').'../vendor/autoload.php';
 
-$args = array();
+use Druid\Storage\ActiveRecord as ActiveRecord;
+use Druid\Rake\Rake as Rake;
 
-if($argc!=1 && (($argc-1)%2)==0) {
-	$i=1;
-	while($i<$argc) {
-		$args[$argv[$i++]] = $argv[$i++];
-	}
-}
+// Get active record config.
+$config = ActiveRecord::getConfig();
 
-// make sure required options have been provided
-if(!array_key_exists('-d',$args) || !array_key_exists('-t',$args) || !array_key_exists('-p',$args)) {
-	echo 'options -d,-p and -u are required to run this script.';
-	exit;
-}
+// Get database credentials from config.
+$name = (string) $config->connection->name;
+$host = (string) $config->connection->host;
+$user = (string) $config->connection->user;
+$password = (string) $config->connection->password;
+$models = (string) $config->models->directory;
 
-$host = array_key_exists('-h',$args)?$args['-h']:'localhost';
-$user = array_key_exists('-u',$args)?$args['-u']:'root';
-$tables = array_key_exists('-m',$args)?explode(',',trim($args['-m'],'[]')):null;
-$name = $args['-d'];
-$pwd = $args['-p'];
-$target = $args['-t']; 
+// Establish connection to db
+$db = new PDO("mysql:dbname=$name;host=$host",$user,$password);
 
-// make sure target directory exists
-if(!is_dir($target)) {
-	echo 'Script can\'t procede because target directory '.$target.' does not exist';
-	exit;
+// Location of model files.
+$directory = str_replace('//','/',dirname(__FILE__).'/')."../$models";
+
+if(!is_dir($directory)) {
+  mkdir($directory);
 }
 
 try {
-
-	$db = new PDO("mysql:dbname=$name;host=$host",$user,$pwd);
-	new ActiveRecordRake($db,$target,$tables);
-	echo "\n".'Script executed sucessfully'."\n";
-
+  new Rake($db,$directory);
+  echo PHP_EOL.'Script executed successfully'.PHP_EOL;
 } catch(PDOException $e) {
-
-	echo 'Connection Error: '.$e->getMessage();
-	
+  echo 'Connection Error: '.$e->getMessage();
 } catch(Exception $e) {
-
-	echo 'Basic Error: '.$e->getMessage();
-	
+  echo 'Basic Error: '.$e->getMessage();
 }
-?>
