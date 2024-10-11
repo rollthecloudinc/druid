@@ -48,6 +48,7 @@ interface ModelConfig {
   public function hasTable();
   public function hasFields();
   public function hasPrimaryKey();
+  public function hasCompositeKey();
   public function hasUniqueKeys();
   public function hasForeignKeys();
   public function hasValidation();

@@ -564,7 +564,14 @@ class SelectStatement {
       $searchForMagicalPrimaryKey = array_search(ActiveRecordFindConfig::id,$select);
 
       if($searchForMagicalPrimaryKey !== false) {
-        $select[$searchForMagicalPrimaryKey] = $primaryKey;
+
+        // Composite key support.
+        if($config->hasCompositeKey()) {
+          // @todo: implement
+        } else {
+          $select[$searchForMagicalPrimaryKey] = $primaryKey;
+        }
+
       }
 
       $fields = $find->getSelect()?array_intersect($fields,$select):array();

@@ -311,6 +311,10 @@ class ModelConfig implements IActiveRecordModelConfig {
     return $this->_primaryKey==''?false:true;
   }
 
+  public function hasCompositeKey() {
+    return is_array($this->_primaryKey)?true:false;
+  }
+
   public function hasUniqueKeys() {
     return empty($this->_uniqueKeys)?false:true;
   }

@@ -1,7 +1,7 @@
 <?php
 /**
  * Command line script to generate model files from existing db.
- * version: php 5.6+
+ * version: php 5.4+
  */
 
 require str_replace('//','/',dirname(__FILE__).'/').'../vendor/autoload.php';

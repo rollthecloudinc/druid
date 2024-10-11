@@ -71,6 +71,7 @@ class Generate {
 			$foreignKeys = array();
 			$belongsTo = array();
       $trueForeignKeys = array();
+      $primaryKey = array();
 
       // Automated discovery or foreign keys based on reading create table statement.
       if($this->foreignKeys===true) {
@@ -79,7 +80,7 @@ class Generate {
 
 			foreach($this->db->query('describe '.$config->getTable().';') as $model) {
 		
-				if(!empty($model['Key']) && strcasecmp($model['Key'],'PRI')==0) $config->setPrimaryKey($model['Field']);	
+				if(!empty($model['Key']) && strcasecmp($model['Key'],'PRI')==0) $primaryKey[] = $model['Field'];;
 				if(strcasecmp($model['Null'],'NO')==0 && is_null($model['Default']) && strcasecmp($model['Extra'],'auto_increment')!=0) $requiredFields[] = $model['Field'];		
 				if(!empty($model['Default'])) $defaultValues[$model['Field']] = $model['Default'];	
 				$fields[] = $model['Field'];
@@ -114,6 +115,14 @@ class Generate {
 				}*/
 	
 			}
+
+      // Composite key support.
+      // @todo: Discover has relationship / though -- Good chance this is a belongToAndHasMany relationship
+      if(count($primaryKey) > 1) {
+        $config->setPrimaryKey($primaryKey);
+      } else if($primaryKey) {
+        $config->setPrimaryKey($primaryKey[0]);
+      }
 	
 			if($this->fields===true) $config->setFields($fields);
 			if($this->dataTypes===true) $config->setDataTypes($dataTypes);
@@ -270,7 +279,22 @@ class Generate {
 	
 		if($this->table === true && $config->hasTable()===true) $str.= "\t".'public static $'.IActiveRecordModelConfig::table.' = \''.trim($config->getTable()).'\';'."\n\n"; 
 		
-		if($this->primaryKey === true && $config->hasPrimaryKey()===true) $str.= "\t".'public static $'.IActiveRecordModelConfig::primaryKey.' = \''.trim($config->getPrimaryKey()).'\';'."\n\n"; 
+		if($this->primaryKey === true && $config->hasPrimaryKey()===true) {
+      /*
+       * Adding composite key support.
+       */
+      if($config->hasCompositeKey()) {
+
+        $str.= "\t".'public static $'.IActiveRecordModelConfig::primaryKey.' = array('."\n\n";
+        foreach($config->getPrimaryKey() as $key=>$field) {
+          $str.= $key!=0?"\t\t".',\''.trim($field).'\''."\n":"\t\t".'\''.trim($field).'\''."\n";
+        }
+        $str.= "\n\t".');'."\n\n";
+
+      } else {
+        $str .= "\t" . 'public static $' . IActiveRecordModelConfig::primaryKey . ' = \'' . trim($config->getPrimaryKey()) . '\';' . "\n\n";
+      }
+    }
 	
 		if($config->hasFields()===true) {
 		
