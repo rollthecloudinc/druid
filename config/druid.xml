@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding='UTF-8'?>
+<druid>
+    <models>
+        <directory>model</directory>
+    </models>
+    <connection>
+        <host>localhost</host>
+        <password>-Password1</password>
+        <user>root</user>
+        <name>druid_magento</name>
+    </connection>
+</druid>
